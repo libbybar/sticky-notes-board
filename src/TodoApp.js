@@ -1,0 +1,355 @@
+import { useState } from 'react';
+import { useTodoManager } from './Hooks/useTodoManager';
+import styled from 'styled-components';
+import Header from './components/Header';
+import TaskInput from './components/TaskInput';
+import StickyNote from './components/StickyNote';
+import Login from './components/Login';
+import CategoryManager from './components/CategoryManager';
+import ConfirmationModal from './components/ConfirmationModal';
+import myBackgroundImage from './assets/my-background.jpeg';
+import { useBulkSelection } from './Hooks/useBulkSelection';
+
+
+const AppContainer = styled.div`
+  min-height: 100vh;  padding: 2rem;
+  background: radial-gradient(circle at top right, #fdf2ff, #f0f4ff, #fff5f5);
+  direction: rtl;
+`;
+const ControlBar = styled.div`
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  padding: 0.5rem;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  backdrop-filter: blur(5px);
+  align-items: center;
+  flex-wrap: wrap;
+`;
+const BulkActionBanner = styled.div`
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 1.2rem;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+  animation: slideDown 0.3s ease-out;
+
+  @keyframes slideDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  span {
+    font-weight: 600;
+    color: #1e293b;
+    font-family: 'Assistant', sans-serif;
+  }
+`;
+const CategorySelect = styled.select`
+  padding: 0.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.1);
+  font-family: 'Assistant', sans-serif;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  color: #1e293b;
+`;
+const ActionButton = styled.button`
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+  background: ${props => props.$variant === 'danger' ? '#fee2e2' : '#f1f5f9'};
+  color: ${props => props.$variant === 'danger' ? '#ef4444' : '#475569'};
+
+  &:hover {
+    background: ${props => props.$variant === 'danger' ? '#ef4444' : '#e2e8f0'};
+    color: ${props => props.$variant === 'danger' ? 'white' : '#1e293b'};
+  }
+`;
+const SearchInput = styled.input`
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(0,0,0,0.1);
+  outline: none;
+  flex: 1;
+  min-width: 200px;
+  font-family: 'Assistant', sans-serif;
+`;
+const FilterButton = styled.button`
+  padding: 0.4rem 0.8rem;
+  border-radius: 15px;
+  border: 1px solid ${props => props.$active ? '#3b82f6' : 'rgba(0,0,0,0.1)'};
+  background: ${props => props.$active ? '#3b82f6' : 'white'};
+  color: ${props => props.$active ? 'white' : '#64748b'};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+`;
+const NotesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 3rem 2rem;
+  position: relative;
+
+  background-color: #bc8f6f;
+  background-image: 
+   url(${myBackgroundImage}),
+    radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 100%);
+border: 12px solid #5d4037;
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 0 30px rgba(0,0,0,0.3),
+    0 10px 30px rgba(0,0,0,0.15);
+
+    filter: ${props => props.$isSelectionMode ? 'brightness(0.9) contrast(1.1)' : 'none'};
+  transition: all 0.4s ease;
+
+`;
+const ClearBoardButton = styled.button`
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  color: #64748b;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+  z-index: 100;
+
+  &:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fecaca;
+  }
+
+  &:after {
+    content: 'איפוס לוח';
+    position: absolute;
+    right: 30px;
+    white-space: nowrap;
+    background: #334155;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  &:hover:after {
+    opacity: 1;
+  }
+`;
+
+const TodoApp = () => {
+
+    const {
+        userName,
+        categories,
+        visibleTasks,
+        searchTerm,
+        selectedFilter,
+        activeStatusFilter,
+
+        setUserName,
+        setCategories,
+        setSearchTerm,
+        setSelectedFilter,
+        setActiveStatusFilter,
+
+        addTask,
+        renameTask,
+        updateTaskContent,
+        changeTaskDeadline,
+        moveToCategory,
+        toggleImportant,
+        toggleTaskStatus,
+        confirmDeleteTask,
+        deleteMultipleTasks,
+        updateMultipleTasksCategory,
+        clearAppData
+    } = useTodoManager();
+
+    const {
+        selectedIds,
+        isSelectionMode,
+        toggleSelection,
+        toggleMode: toggleSelectionMode,
+        clearSelection
+    } = useBulkSelection();
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [isBulkDeleteModalOpen, setIsBulkDeleteModalOpen] = useState(false);
+    const [taskToDelete, setTaskToDelete] = useState(null);
+    const [isCategoryDeleteModalOpen, setIsCategoryDeleteModalOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState(null);
+
+    const requestCategoryDelete = (catName) => {
+    setCategoryToDelete(catName);
+    setIsCategoryDeleteModalOpen(true);
+};
+const confirmCategoryDelete = () => {
+    if (categoryToDelete) {
+        setCategories(categories.filter(c => c.name !== categoryToDelete));
+        updateMultipleTasksCategory(
+            visibleTasks.filter(t => t.category === categoryToDelete).map(t => t.id),
+            'כללי'
+        );
+        setIsCategoryDeleteModalOpen(false);
+        setCategoryToDelete(null);
+    }
+};
+    if (!userName) {
+        return <Login onLogin={setUserName} />;
+    }
+
+    const requestDelete = (task) => {
+        setTaskToDelete(task);
+        setIsDeleteModalOpen(true);
+    };
+    const confirmDelete = () => {
+        if (taskToDelete) {
+            confirmDeleteTask(taskToDelete.id);
+            setIsDeleteModalOpen(false);
+            setTaskToDelete(null);
+        }
+    };
+    const handleBulkDelete = () => {
+        deleteMultipleTasks(selectedIds);
+        clearSelection();
+        setIsBulkDeleteModalOpen(false);
+    };
+    const handleConfirmReset = () => {
+        clearAppData();
+        setIsResetModalOpen(false);
+        window.location.reload();
+    };
+    const updateSelectedTasksCategory = (newCategory) => {
+        if (!newCategory || selectedIds.length === 0) return;
+        updateMultipleTasksCategory(selectedIds, newCategory);
+        clearSelection();
+    };
+
+    return (
+        <AppContainer $isSelectionMode={isSelectionMode}>
+            <ClearBoardButton onClick={() => setIsResetModalOpen(true)}>✕</ClearBoardButton>
+
+            <ConfirmationModal
+                isOpen={isDeleteModalOpen}
+                title="למחוק את הפתק?"
+                message={<>הפעולה תמחוק לצמיתות את הפתק:<br /><strong>"{taskToDelete?.title || taskToDelete?.text}"</strong></>}
+                onConfirm={confirmDelete}
+                onCancel={() => setIsDeleteModalOpen(false)}
+            />
+            <ConfirmationModal
+                isOpen={isCategoryDeleteModalOpen}
+                title="למחוק את התווית?"
+                message={`האם את בטוחה שברצונך למחוק את "${categoryToDelete}"?`}
+                onConfirm={confirmCategoryDelete}
+                onCancel={() => setIsCategoryDeleteModalOpen(false)}
+            />
+            <ConfirmationModal
+                isOpen={isResetModalOpen}
+                title="איפוס כל הלוח?"
+                message="זהירות! פעולה זו תמחק את כל התוויות, הפתקים והגדרות המשתמש."
+                confirmText="כן, למחוק הכל"
+                onConfirm={handleConfirmReset}
+                onCancel={() => setIsResetModalOpen(false)}
+            />
+            <ConfirmationModal
+                isOpen={isBulkDeleteModalOpen}
+                title="מחיקה קבוצתית"
+                message={`האם למחוק את ${selectedIds.length} הפתקים שנבחרו?`}
+                onConfirm={handleBulkDelete}
+                onCancel={() => setIsBulkDeleteModalOpen(false)}
+            />
+
+            <Header userName={userName} />
+            <CategoryManager
+                categories={categories}
+                onAdd={(name, color) => setCategories([...categories, { name, color, borderColor: color }])}
+                onDelete={requestCategoryDelete}
+                onUpdateColor={(name, color) => setCategories(categories.map(c => c.name === name ? { ...c, color, borderColor: color } : c))}
+                selectedFilter={selectedFilter}
+                onFilter={(cat) => setSelectedFilter(prev => prev === cat ? 'הכל' : cat)}
+            />
+            <TaskInput onAdd={addTask} categories={categories} />
+
+            <ControlBar>
+                <SearchInput
+                    placeholder=" חיפוש פתק - לפי כותרת או תוכן"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <FilterButton $active={activeStatusFilter === 'important'}
+                    onClick={() => setActiveStatusFilter(prev => prev === 'important' ? 'all' : 'important')}>⭐ דחופות</FilterButton>
+                <FilterButton $active={activeStatusFilter === 'in-progress'}
+                    onClick={() => setActiveStatusFilter(prev => prev === 'in-progress' ? 'all' : 'in-progress')}>🔵 בביצוע</FilterButton>
+                <FilterButton $active={activeStatusFilter === 'overdue'}
+                    onClick={() => setActiveStatusFilter(prev => prev === 'overdue' ? 'all' : 'overdue')}>⚠️ באיחור</FilterButton>
+                <FilterButton $active={isSelectionMode}
+                    onClick={toggleSelectionMode}>{isSelectionMode ? '✅ סיום בחירה' : '☑️ בחירה מרובה'}</FilterButton>
+            </ControlBar>
+
+            {selectedIds.length > 0 && (
+                <BulkActionBanner>
+                    <span>בחרתי {selectedIds.length} פתקים</span>
+                    <ActionButton $variant="danger" onClick={() => setIsBulkDeleteModalOpen(true)}>מחיקה קבוצתית</ActionButton>
+                    <CategorySelect onChange={(e) => updateSelectedTasksCategory(e.target.value)}>
+                        <option value="">שינוי תווית</option>
+                        {categories.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
+                    </CategorySelect>
+                    <ActionButton onClick={clearSelection}>ביטול</ActionButton>
+                </BulkActionBanner>
+            )}
+
+            <NotesGrid $isSelectionMode={isSelectionMode}>
+                {visibleTasks.map(task => (
+                    <StickyNote
+                        key={task.id}
+                        task={task}
+                        isSelected={selectedIds.includes(task.id)}
+                        isSelectionMode={isSelectionMode}
+                        onToggleSelect={() => toggleSelection(task.id)}
+                        categories={categories}
+                        categoryInfo={categories.find(c => c.name === task.category)}
+                        onDelete={() => requestDelete(task)}
+                        onUpdateStatus={() => toggleTaskStatus(task.id)}
+                        onUpdateText={updateTaskContent}
+                        onUpdateTitle={renameTask}
+                        onUpdateDeadline={changeTaskDeadline}
+                        onUpdateCategory={moveToCategory}
+                        onToggleImportant={toggleImportant}
+                    />
+                ))}
+            </NotesGrid>
+        </AppContainer>
+    );
+};
+
+export default TodoApp;
