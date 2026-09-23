@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { BaseInput, BaseButton } from './SharedStyles';
-import { PRIMARY_COLOR, DANGER_COLOR, TEXT_MAIN, TEXT_MUTED } from '../constants';
+import { PRIMARY_COLOR, DANGER_COLOR, TEXT_MUTED } from '../constants';
 
 export const ManagerContainer = styled.div`
   max-width: 600px;

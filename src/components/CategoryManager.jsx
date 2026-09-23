@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import * as S from './CategoryManager.styles';
 import { Plus, X, Palette } from 'lucide-react';
 import ValidationTooltip from './ValidationTooltip';
+import { CATEGORY_MANAGER_ERROR_EMPTY, CATEGORY_MANAGER_ERROR_DUPLICATE, CATEGORY_MANAGER_NAME_PLACEHOLDER } from '../strings';
+import { FILTER_ALL, CATEGORY_GENERAL } from '../constants';
 
 
 const getRandomColor = () => {
@@ -22,7 +24,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
     const trimmedName = newName.trim();
 
     if (!trimmedName) {
-      setError('יש להזין טקסט עבור התווית');
+      setError(CATEGORY_MANAGER_ERROR_EMPTY);
       return;
     }
 
@@ -30,7 +32,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
       cat => cat.name.toLowerCase() === trimmedName.toLowerCase()
     );
     if (isDuplicate) {
-      setError(`כבר קיימת תווית בשם "${trimmedName}"`);
+      setError(CATEGORY_MANAGER_ERROR_DUPLICATE(trimmedName));
       return;
     }
 
@@ -47,7 +49,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
       <S.CategoryList>
         {categories.map(cat => {
           const isSelected = selectedFilter === cat.name;
-          const isDimmed = selectedFilter !== 'הכל' && !isSelected;
+          const isDimmed = selectedFilter !== FILTER_ALL && !isSelected;
 
           return (
             <S.Tag
@@ -72,7 +74,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
                 />
               </S.IconContainer>
               <span>{cat.name}</span>
-              {cat.name !== 'כללי' && (
+              {cat.name !== CATEGORY_GENERAL && (
                 <S.DeleteIcon onClick={(e) => {
                   e.stopPropagation();
                   onDelete(cat.name);
@@ -88,7 +90,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
       <S.AddForm onSubmit={handleSubmit}>
         <S.TinyInput
           $size="small"
-          placeholder="שם קטגוריה חדשה"
+          placeholder={CATEGORY_MANAGER_NAME_PLACEHOLDER}
           value={newName}
           onChange={(e) => {
             if (error) setError('');

@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as S from './ConfirmationModal.styles';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { CANCEL_LABEL, CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT } from '../strings';
 
-const ConfirmationModal = ({ 
-  isOpen, 
-  onCancel, 
-  onConfirm, 
-  title, 
-  message, 
-  confirmText = "כן, למחוק",
-  variant = "danger" 
+const ConfirmationModal = ({
+  isOpen,
+  onCancel,
+  onConfirm,
+  title,
+  message,
+  confirmText = CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT,
+  variant = "danger"
 }) => {
   if (!isOpen) return null;
 
@@ -31,7 +32,7 @@ const ConfirmationModal = ({
           
           <S.CancelButton onClick={onCancel}>
             <X size={18} />
-            ביטול
+            {CANCEL_LABEL}
           </S.CancelButton>
         </S.ButtonGroup>
       </S.ModalContainer>

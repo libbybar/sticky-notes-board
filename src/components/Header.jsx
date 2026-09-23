@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { HEADER_GREETING_PREFIX, HEADER_GUEST_NAME, HEADER_SUBTITLE } from '../strings';
 
 const HeaderContainer = styled.header`
   margin-bottom: 3rem;
@@ -32,15 +33,15 @@ const SubTitle = styled.p`
   font-family: 'Amatic SC', cursive;
 `;
 const Header = ({ userName }) => {
-  const displayName = userName || 'אורח/ת';
+  const displayName = userName || HEADER_GUEST_NAME;
 
   return (
     <HeaderContainer>
       <MainGreeting>
-        שלום, <NameHighlight>{displayName}</NameHighlight>
+        {HEADER_GREETING_PREFIX}<NameHighlight>{displayName}</NameHighlight>
       </MainGreeting>
       <SubTitle>
-        מה נדביק על הלוח היום?
+        {HEADER_SUBTITLE}
       </SubTitle>
     </HeaderContainer>
   );

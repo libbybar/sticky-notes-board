@@ -1,7 +1,18 @@
 import React from 'react';
 import * as S from './StickyNote.styles';
 import { Check, Trash2, Pin, Star } from 'lucide-react';
-import { DEFAULT_COLOR, DEFAULT_BORDER } from '../constants';
+import { DEFAULT_COLOR, DEFAULT_BORDER, CATEGORY_GENERAL } from '../constants';
+import {
+  STICKY_NOTE_DELETE_TITLE,
+  STICKY_NOTE_MARK_IMPORTANT,
+  STICKY_NOTE_UNMARK_IMPORTANT,
+  STICKY_NOTE_NO_DEADLINE_LABEL,
+  STICKY_NOTE_OVERDUE_BADGE,
+  STICKY_NOTE_CREATED_AT,
+  STICKY_NOTE_CHECK_TITLE_PENDING,
+  STICKY_NOTE_CHECK_TITLE_IN_PROGRESS,
+  STICKY_NOTE_CHECK_TITLE_COMPLETED
+} from '../strings';
 
 const StickyNote = ({
   task,
@@ -25,7 +36,7 @@ const StickyNote = ({
     id = "N/A",
     title = "",
     text = "",
-    category = "כללי",
+    category = CATEGORY_GENERAL,
     deadline = '',
     completed = false,
     rotation = 0,
@@ -87,7 +98,7 @@ const StickyNote = ({
               ))}
             </S.CategoryTag>
           </S.HeaderActions>
-          <S.DeleteBtn onClick={handleDelete} title="מחיקה">
+          <S.DeleteBtn onClick={handleDelete} title={STICKY_NOTE_DELETE_TITLE}>
             <Trash2 size={14} />
           </S.DeleteBtn>
         </S.TopRow>
@@ -96,7 +107,7 @@ const StickyNote = ({
           <S.StarButton
             $isImportant={isImportant}
             onClick={() => onToggleImportant && onToggleImportant(id)}
-            title={isImportant ? "להסיר סימון כדחוף" : "סימון כדחוף"}
+            title={isImportant ? STICKY_NOTE_UNMARK_IMPORTANT : STICKY_NOTE_MARK_IMPORTANT}
           >
             <Star size={18} fill={isImportant ? "currentColor" : "none"} />
           </S.StarButton>
@@ -133,13 +144,13 @@ const StickyNote = ({
               onChange={(e) => onUpdateDeadline && onUpdateDeadline(id, e.target.value)}
               onClick={(e) => e.stopPropagation()}
             />
-            {isOverdue && <S.OverdueBadge>באיחור!</S.OverdueBadge>}
+            {isOverdue && <S.OverdueBadge>{STICKY_NOTE_OVERDUE_BADGE}</S.OverdueBadge>}
             <S.DisplayDate $isOverdue={isOverdue}>
-              {deadline ? formattedDeadline : 'להוספת תאריך'}
+              {deadline ? formattedDeadline : STICKY_NOTE_NO_DEADLINE_LABEL}
             </S.DisplayDate>
           </S.DeadlineRow>
           <S.CreationDate>
-            נוצר ב: {new Date(task.createdAt).toLocaleDateString('he-IL')}
+            {STICKY_NOTE_CREATED_AT(new Date(task.createdAt).toLocaleDateString('he-IL'))}
           </S.CreationDate>
         </S.FooterInfo>
 
@@ -149,9 +160,9 @@ const StickyNote = ({
             $status={task.status || 'pending'}
             onClick={handleUpdateStatus}
             title={
-              task.status === 'pending' ? "לסמן כ-'בביצוע'" :
-                task.status === 'in-progress' ? "לסמן כ-'בוצע'" :
-                  "משימה הושלמה (לחיצה נוספת לאיפוס)"
+              task.status === 'pending' ? STICKY_NOTE_CHECK_TITLE_PENDING :
+                task.status === 'in-progress' ? STICKY_NOTE_CHECK_TITLE_IN_PROGRESS :
+                  STICKY_NOTE_CHECK_TITLE_COMPLETED
             }
           >
             <Check size={18} strokeWidth={3} />

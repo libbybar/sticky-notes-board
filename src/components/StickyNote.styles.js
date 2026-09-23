@@ -1,8 +1,9 @@
 import styled, { keyframes } from 'styled-components';
-import { 
-  DEFAULT_COLOR, PRIMARY_COLOR, DANGER_COLOR, TEXT_MAIN, 
-  TEXT_MUTED, WARNING_COLOR, SUCCESS_COLOR 
+import {
+  DEFAULT_COLOR, PRIMARY_COLOR, DANGER_COLOR, TEXT_MAIN,
+  TEXT_MUTED, WARNING_COLOR, SUCCESS_COLOR
 } from '../constants';
+import { STICKY_NOTE_TITLE_PLACEHOLDER } from '../strings';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -113,7 +114,7 @@ export const TitleInput = styled.div`
   text-decoration: ${props => props.$isCompleted ? 'line-through' : 'none'};
 
   &:empty::before {
-    content: "כותרת";
+    content: "${STICKY_NOTE_TITLE_PLACEHOLDER}";
     color: #94a3b8;
     font-weight: normal; 
   }

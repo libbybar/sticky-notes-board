@@ -22,3 +22,12 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# internal AI-team coordination doc — not for publishing
+AGENTS.md
+
+# local progress tracker — not for publishing
+PROGRESS.md
+
+# local Claude Code settings (permissions, local paths)
+.claude/

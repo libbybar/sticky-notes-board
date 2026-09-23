@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CATEGORY_GENERAL, DEFAULT_COLOR, DEFAULT_BORDER, STATUS_PENDING } from '../constants';
+import { CATEGORY_GENERAL, DEFAULT_COLOR, DEFAULT_BORDER, STATUS_PENDING, FILTER_ALL } from '../constants';
 import { TodoRepository } from '../services/TodoRepository';
 
 
@@ -11,7 +11,7 @@ export const useTodoManager = () => {
     const [categories, setCategories] = useState(initialData.categories);
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedFilter, setSelectedFilter] = useState('הכל');
+    const [selectedFilter, setSelectedFilter] = useState(FILTER_ALL);
     const [activeStatusFilter, setActiveStatusFilter] = useState('all');
 
     useEffect(() => {
@@ -82,6 +82,11 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
             ids.includes(t.id) ? { ...t, category: newCategory } : t
         ));
     };
+    const moveCategoryTasks = (fromCategory, toCategory) => {
+        setTasks(prev => prev.map(t =>
+            t.category === fromCategory ? { ...t, category: toCategory } : t
+        ));
+    };
     const clearAppData = () => {
         TodoRepository.clearAll();
         setUserName('');
@@ -96,7 +101,7 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
         .filter(task => {
             const matchesSearch = (task.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
                 (task.text || "").toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory = selectedFilter === 'הכל' || task.category === selectedFilter;
+            const matchesCategory = selectedFilter === FILTER_ALL || task.category === selectedFilter;
 
             let matchesStatus = true;
             if (activeStatusFilter === 'important') matchesStatus = task.isImportant;
@@ -136,6 +141,7 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
         confirmDeleteTask,
         deleteMultipleTasks,
         updateMultipleTasksCategory,
+        moveCategoryTasks,
         clearAppData
     };
 };

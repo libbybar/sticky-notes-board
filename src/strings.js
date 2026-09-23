@@ -1,0 +1,60 @@
+// טקסטים משותפים
+export const CANCEL_LABEL = 'ביטול';
+export const BULK_DELETE_LABEL = 'מחיקה קבוצתית';
+
+// Header.jsx
+export const HEADER_GREETING_PREFIX = 'שלום, ';
+export const HEADER_GUEST_NAME = 'אורח/ת';
+export const HEADER_SUBTITLE = 'מה נדביק על הלוח היום?';
+
+// Login.jsx
+export const LOGIN_TITLE = 'שלום לך';
+export const LOGIN_SUBTITLE = 'מה שמך?';
+export const LOGIN_NAME_PLACEHOLDER = 'פה המקום להכניס שם';
+export const LOGIN_SUBMIT_BUTTON = 'להיכנס לאפליקציה';
+
+// TaskInput.jsx
+export const TASK_INPUT_ERROR_EMPTY = 'נדרש טקסט כדי להדביק פתק';
+export const TASK_INPUT_PLACEHOLDER = 'מה נדביק על הלוח?';
+export const TASK_INPUT_SUBMIT_BUTTON = 'להדביק';
+
+// CategoryManager.jsx
+export const CATEGORY_MANAGER_ERROR_EMPTY = 'יש להזין טקסט עבור התווית';
+export const CATEGORY_MANAGER_ERROR_DUPLICATE = (name) => `כבר קיימת תווית בשם "${name}"`;
+export const CATEGORY_MANAGER_NAME_PLACEHOLDER = 'שם קטגוריה חדשה';
+
+// StickyNote.jsx + StickyNote.styles.js
+export const STICKY_NOTE_DELETE_TITLE = 'מחיקה';
+export const STICKY_NOTE_MARK_IMPORTANT = 'סימון כדחוף';
+export const STICKY_NOTE_UNMARK_IMPORTANT = 'להסיר סימון כדחוף';
+export const STICKY_NOTE_NO_DEADLINE_LABEL = 'להוספת תאריך';
+export const STICKY_NOTE_OVERDUE_BADGE = 'באיחור!';
+export const STICKY_NOTE_CREATED_AT = (dateStr) => `נוצר ב: ${dateStr}`;
+export const STICKY_NOTE_CHECK_TITLE_PENDING = "לסמן כ-'בביצוע'";
+export const STICKY_NOTE_CHECK_TITLE_IN_PROGRESS = "לסמן כ-'בוצע'";
+export const STICKY_NOTE_CHECK_TITLE_COMPLETED = 'משימה הושלמה (לחיצה נוספת לאיפוס)';
+export const STICKY_NOTE_TITLE_PLACEHOLDER = 'כותרת';
+
+// ConfirmationModal.jsx
+export const CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT = 'כן, למחוק';
+
+// TodoApp.js
+export const TODO_APP_CLEAR_BOARD_TOOLTIP = 'איפוס לוח';
+export const TODO_APP_DELETE_TASK_TITLE = 'למחוק את הפתק?';
+export const TODO_APP_DELETE_TASK_MESSAGE_PREFIX = 'הפעולה תמחוק לצמיתות את הפתק:';
+export const TODO_APP_DELETE_CATEGORY_TITLE = 'למחוק את התווית?';
+export const TODO_APP_DELETE_CATEGORY_CONFIRM_PREFIX = 'האם את בטוחה שברצונך למחוק את התווית ';
+export const TODO_APP_DELETE_CATEGORY_KEPT_NOTICE = (generalCategoryName) =>
+  `הפתקים שבה לא יימחקו — הם יעברו לתווית "${generalCategoryName}".`;
+export const TODO_APP_RESET_TITLE = 'איפוס כל הלוח?';
+export const TODO_APP_RESET_MESSAGE = 'זהירות! פעולה זו תמחק את כל התוויות, הפתקים והגדרות המשתמש.';
+export const TODO_APP_RESET_CONFIRM_TEXT = 'כן, למחוק הכל';
+export const TODO_APP_BULK_DELETE_MESSAGE = (count) => `האם למחוק את ${count} הפתקים שנבחרו?`;
+export const TODO_APP_SEARCH_PLACEHOLDER = ' חיפוש פתק - לפי כותרת או תוכן';
+export const TODO_APP_FILTER_IMPORTANT_LABEL = '⭐ דחופות';
+export const TODO_APP_FILTER_IN_PROGRESS_LABEL = '🔵 בביצוע';
+export const TODO_APP_FILTER_OVERDUE_LABEL = '⚠️ באיחור';
+export const TODO_APP_SELECTION_MODE_ON_LABEL = '✅ סיום בחירה';
+export const TODO_APP_SELECTION_MODE_OFF_LABEL = '☑️ בחירה מרובה';
+export const TODO_APP_BULK_BANNER_SELECTED_COUNT = (count) => `בחרתי ${count} פתקים`;
+export const TODO_APP_CHANGE_CATEGORY_OPTION = 'שינוי תווית';

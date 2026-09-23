@@ -1,6 +1,7 @@
 
 
 export const CATEGORY_GENERAL = 'כללי';
+export const FILTER_ALL = 'הכל';
 export const STORAGE_KEY_TASKS = 'tasks';
 export const STORAGE_KEY_USER = 'userName';
 export const STORAGE_KEY_CATEGORIES = 'categories';

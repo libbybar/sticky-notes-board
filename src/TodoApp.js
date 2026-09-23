@@ -9,6 +9,29 @@ import CategoryManager from './components/CategoryManager';
 import ConfirmationModal from './components/ConfirmationModal';
 import myBackgroundImage from './assets/my-background.jpeg';
 import { useBulkSelection } from './Hooks/useBulkSelection';
+import { CATEGORY_GENERAL, FILTER_ALL } from './constants';
+import {
+  CANCEL_LABEL,
+  BULK_DELETE_LABEL,
+  TODO_APP_CLEAR_BOARD_TOOLTIP,
+  TODO_APP_DELETE_TASK_TITLE,
+  TODO_APP_DELETE_TASK_MESSAGE_PREFIX,
+  TODO_APP_DELETE_CATEGORY_TITLE,
+  TODO_APP_DELETE_CATEGORY_CONFIRM_PREFIX,
+  TODO_APP_DELETE_CATEGORY_KEPT_NOTICE,
+  TODO_APP_RESET_TITLE,
+  TODO_APP_RESET_MESSAGE,
+  TODO_APP_RESET_CONFIRM_TEXT,
+  TODO_APP_BULK_DELETE_MESSAGE,
+  TODO_APP_SEARCH_PLACEHOLDER,
+  TODO_APP_FILTER_IMPORTANT_LABEL,
+  TODO_APP_FILTER_IN_PROGRESS_LABEL,
+  TODO_APP_FILTER_OVERDUE_LABEL,
+  TODO_APP_SELECTION_MODE_ON_LABEL,
+  TODO_APP_SELECTION_MODE_OFF_LABEL,
+  TODO_APP_BULK_BANNER_SELECTED_COUNT,
+  TODO_APP_CHANGE_CATEGORY_OPTION
+} from './strings';
 
 
 const AppContainer = styled.div`
@@ -146,7 +169,7 @@ const ClearBoardButton = styled.button`
   }
 
   &:after {
-    content: 'איפוס לוח';
+    content: '${TODO_APP_CLEAR_BOARD_TOOLTIP}';
     position: absolute;
     right: 30px;
     white-space: nowrap;
@@ -191,6 +214,7 @@ const TodoApp = () => {
         confirmDeleteTask,
         deleteMultipleTasks,
         updateMultipleTasksCategory,
+        moveCategoryTasks,
         clearAppData
     } = useTodoManager();
 
@@ -216,10 +240,10 @@ const TodoApp = () => {
 const confirmCategoryDelete = () => {
     if (categoryToDelete) {
         setCategories(categories.filter(c => c.name !== categoryToDelete));
-        updateMultipleTasksCategory(
-            visibleTasks.filter(t => t.category === categoryToDelete).map(t => t.id),
-            'כללי'
-        );
+        moveCategoryTasks(categoryToDelete, CATEGORY_GENERAL);
+        if (selectedFilter === categoryToDelete) {
+            setSelectedFilter(FILTER_ALL);
+        }
         setIsCategoryDeleteModalOpen(false);
         setCategoryToDelete(null);
     }
@@ -261,30 +285,30 @@ const confirmCategoryDelete = () => {
 
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}
-                title="למחוק את הפתק?"
-                message={<>הפעולה תמחוק לצמיתות את הפתק:<br /><strong>"{taskToDelete?.title || taskToDelete?.text}"</strong></>}
+                title={TODO_APP_DELETE_TASK_TITLE}
+                message={<>{TODO_APP_DELETE_TASK_MESSAGE_PREFIX}<br /><strong>"{taskToDelete?.title || taskToDelete?.text}"</strong></>}
                 onConfirm={confirmDelete}
                 onCancel={() => setIsDeleteModalOpen(false)}
             />
             <ConfirmationModal
                 isOpen={isCategoryDeleteModalOpen}
-                title="למחוק את התווית?"
-                message={`האם את בטוחה שברצונך למחוק את "${categoryToDelete}"?`}
+                title={TODO_APP_DELETE_CATEGORY_TITLE}
+                message={<>{TODO_APP_DELETE_CATEGORY_CONFIRM_PREFIX}<strong>"{categoryToDelete}"</strong>?<br />{TODO_APP_DELETE_CATEGORY_KEPT_NOTICE(CATEGORY_GENERAL)}</>}
                 onConfirm={confirmCategoryDelete}
                 onCancel={() => setIsCategoryDeleteModalOpen(false)}
             />
             <ConfirmationModal
                 isOpen={isResetModalOpen}
-                title="איפוס כל הלוח?"
-                message="זהירות! פעולה זו תמחק את כל התוויות, הפתקים והגדרות המשתמש."
-                confirmText="כן, למחוק הכל"
+                title={TODO_APP_RESET_TITLE}
+                message={TODO_APP_RESET_MESSAGE}
+                confirmText={TODO_APP_RESET_CONFIRM_TEXT}
                 onConfirm={handleConfirmReset}
                 onCancel={() => setIsResetModalOpen(false)}
             />
             <ConfirmationModal
                 isOpen={isBulkDeleteModalOpen}
-                title="מחיקה קבוצתית"
-                message={`האם למחוק את ${selectedIds.length} הפתקים שנבחרו?`}
+                title={BULK_DELETE_LABEL}
+                message={TODO_APP_BULK_DELETE_MESSAGE(selectedIds.length)}
                 onConfirm={handleBulkDelete}
                 onCancel={() => setIsBulkDeleteModalOpen(false)}
             />
@@ -296,35 +320,35 @@ const confirmCategoryDelete = () => {
                 onDelete={requestCategoryDelete}
                 onUpdateColor={(name, color) => setCategories(categories.map(c => c.name === name ? { ...c, color, borderColor: color } : c))}
                 selectedFilter={selectedFilter}
-                onFilter={(cat) => setSelectedFilter(prev => prev === cat ? 'הכל' : cat)}
+                onFilter={(cat) => setSelectedFilter(prev => prev === cat ? FILTER_ALL : cat)}
             />
             <TaskInput onAdd={addTask} categories={categories} />
 
             <ControlBar>
                 <SearchInput
-                    placeholder=" חיפוש פתק - לפי כותרת או תוכן"
+                    placeholder={TODO_APP_SEARCH_PLACEHOLDER}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <FilterButton $active={activeStatusFilter === 'important'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'important' ? 'all' : 'important')}>⭐ דחופות</FilterButton>
+                    onClick={() => setActiveStatusFilter(prev => prev === 'important' ? 'all' : 'important')}>{TODO_APP_FILTER_IMPORTANT_LABEL}</FilterButton>
                 <FilterButton $active={activeStatusFilter === 'in-progress'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'in-progress' ? 'all' : 'in-progress')}>🔵 בביצוע</FilterButton>
+                    onClick={() => setActiveStatusFilter(prev => prev === 'in-progress' ? 'all' : 'in-progress')}>{TODO_APP_FILTER_IN_PROGRESS_LABEL}</FilterButton>
                 <FilterButton $active={activeStatusFilter === 'overdue'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'overdue' ? 'all' : 'overdue')}>⚠️ באיחור</FilterButton>
+                    onClick={() => setActiveStatusFilter(prev => prev === 'overdue' ? 'all' : 'overdue')}>{TODO_APP_FILTER_OVERDUE_LABEL}</FilterButton>
                 <FilterButton $active={isSelectionMode}
-                    onClick={toggleSelectionMode}>{isSelectionMode ? '✅ סיום בחירה' : '☑️ בחירה מרובה'}</FilterButton>
+                    onClick={toggleSelectionMode}>{isSelectionMode ? TODO_APP_SELECTION_MODE_ON_LABEL : TODO_APP_SELECTION_MODE_OFF_LABEL}</FilterButton>
             </ControlBar>
 
             {selectedIds.length > 0 && (
                 <BulkActionBanner>
-                    <span>בחרתי {selectedIds.length} פתקים</span>
-                    <ActionButton $variant="danger" onClick={() => setIsBulkDeleteModalOpen(true)}>מחיקה קבוצתית</ActionButton>
+                    <span>{TODO_APP_BULK_BANNER_SELECTED_COUNT(selectedIds.length)}</span>
+                    <ActionButton $variant="danger" onClick={() => setIsBulkDeleteModalOpen(true)}>{BULK_DELETE_LABEL}</ActionButton>
                     <CategorySelect onChange={(e) => updateSelectedTasksCategory(e.target.value)}>
-                        <option value="">שינוי תווית</option>
+                        <option value="">{TODO_APP_CHANGE_CATEGORY_OPTION}</option>
                         {categories.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
                     </CategorySelect>
-                    <ActionButton onClick={clearSelection}>ביטול</ActionButton>
+                    <ActionButton onClick={clearSelection}>{CANCEL_LABEL}</ActionButton>
                 </BulkActionBanner>
             )}
 

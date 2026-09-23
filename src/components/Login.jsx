@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as S from './Login.styles';
 import { UserCircle2, ArrowLeftCircle } from 'lucide-react';
+import { LOGIN_TITLE, LOGIN_SUBTITLE, LOGIN_NAME_PLACEHOLDER, LOGIN_SUBMIT_BUTTON } from '../strings';
 
 
 const Login = ({ onLogin }) => {
@@ -20,19 +21,19 @@ const Login = ({ onLogin }) => {
           <UserCircle2 size={64} strokeWidth={1.5} />
         </S.IconWrapper>
         
-        <S.Title>שלום לך</S.Title>
-        <S.Subtitle>מה שמך?</S.Subtitle>
-        
+        <S.Title>{LOGIN_TITLE}</S.Title>
+        <S.Subtitle>{LOGIN_SUBTITLE}</S.Subtitle>
+
         <S.StyledForm onSubmit={handleSubmit}>
-          <S.Input 
-            type="text" 
-            placeholder="פה המקום להכניס שם"
+          <S.Input
+            type="text"
+            placeholder={LOGIN_NAME_PLACEHOLDER}
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
           />
           <S.SubmitButton type="submit">
-            להיכנס לאפליקציה
+            {LOGIN_SUBMIT_BUTTON}
             <ArrowLeftCircle size={20} />
           </S.SubmitButton>
         </S.StyledForm>

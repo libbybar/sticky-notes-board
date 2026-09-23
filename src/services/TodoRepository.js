@@ -5,6 +5,15 @@ import { STORAGE_KEY_TASKS,
     DEFAULT_COLOR,
     DEFAULT_BORDER} from '../constants';
 
+const createGeneralCategory = () => (
+    { name: CATEGORY_GENERAL, color: DEFAULT_COLOR, borderColor: DEFAULT_BORDER }
+);
+
+const withGeneralCategory = (categories) =>
+    categories.some(cat => cat.name === CATEGORY_GENERAL)
+        ? categories
+        : [createGeneralCategory(), ...categories];
+
     export const TodoRepository = {
         getAllData() {
         try {
@@ -15,16 +24,14 @@ import { STORAGE_KEY_TASKS,
             return {
                 userName: savedUser || '',
                 tasks: savedTasks ? JSON.parse(savedTasks) : [],
-                categories: savedCategories ? JSON.parse(savedCategories) : [
-                    { name: CATEGORY_GENERAL, color: DEFAULT_COLOR, borderColor: DEFAULT_BORDER }
-                ]
+                categories: withGeneralCategory(savedCategories ? JSON.parse(savedCategories) : [])
             };
         } catch (e) {
             console.error("Error loading from localStorage", e);
-            return { 
-                userName: '', 
-                tasks: [], 
-                categories: [{ name: CATEGORY_GENERAL, color: DEFAULT_COLOR, borderColor: DEFAULT_BORDER }] 
+            return {
+                userName: '',
+                tasks: [],
+                categories: [createGeneralCategory()]
             };
         }
     },

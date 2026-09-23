@@ -2,17 +2,23 @@ import React, { useState } from 'react';
 import * as S from './TaskInput.styles';
 import { PlusCircle } from 'lucide-react';
 import ValidationTooltip from './ValidationTooltip';
+import { TASK_INPUT_ERROR_EMPTY, TASK_INPUT_PLACEHOLDER, TASK_INPUT_SUBMIT_BUTTON } from '../strings';
+import { CATEGORY_GENERAL } from '../constants';
 
 const TaskInput = ({ onAdd, categories }) => {
   const [text, setText] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.name || 'כללי');
+  const [selectedCategory, setSelectedCategory] = useState(categories[0]?.name || CATEGORY_GENERAL);
   const [deadline, setDeadline] = useState('');
   const [error, setError] = useState('');
+
+  if (selectedCategory !== CATEGORY_GENERAL && !categories.some(cat => cat.name === selectedCategory)) {
+    setSelectedCategory(CATEGORY_GENERAL);
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault(); // מונע מהדף להתרענן
 if (!text.trim()) {
-      setError('נדרש טקסט כדי להדביק פתק');
+      setError(TASK_INPUT_ERROR_EMPTY);
       return;
 
     }    const randomPinRotation = Math.floor(Math.random() * 61) - 30;
@@ -39,7 +45,7 @@ if (!text.trim()) {
       <S.StyledForm onSubmit={handleSubmit}>
         <S.TextInput
           type="text"
-          placeholder="מה נדביק על הלוח?"
+          placeholder={TASK_INPUT_PLACEHOLDER}
           value={text}
           onChange={(e) => {
             if (error) setError(''); 
@@ -66,7 +72,7 @@ if (!text.trim()) {
         </S.CategorySelect>
 
         <S.AddButton type="submit">
-          <span>להדביק</span>
+          <span>{TASK_INPUT_SUBMIT_BUTTON}</span>
           <PlusCircle size={20} />
         </S.AddButton>
       </S.StyledForm>
