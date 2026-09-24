@@ -2,8 +2,8 @@ import styled, { keyframes } from 'styled-components';
 import {
   DEFAULT_COLOR, PRIMARY_COLOR, DANGER_COLOR, TEXT_MAIN,
   TEXT_MUTED, WARNING_COLOR, SUCCESS_COLOR
-} from '../constants';
-import { STICKY_NOTE_TITLE_PLACEHOLDER } from '../strings';
+} from './style-constants';
+import { STICKY_NOTE_TITLE_PLACEHOLDER } from '../ui-texts';
 
 const fadeIn = keyframes`
   from { opacity: 0; }

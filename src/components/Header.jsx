@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { HEADER_GREETING_PREFIX, HEADER_GUEST_NAME, HEADER_SUBTITLE } from '../strings';
+import { HEADER_GREETING_PREFIX, HEADER_GUEST_NAME, HEADER_SUBTITLE } from '../ui-texts';
 
 const HeaderContainer = styled.header`
   margin-bottom: 3rem;

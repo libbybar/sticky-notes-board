@@ -1,7 +1,7 @@
 import React from 'react';
-import * as S from './ConfirmationModal.styles';
+import * as S from '../style/ConfirmationModal.styles';
 import { AlertTriangle, Trash2, X } from 'lucide-react';
-import { CANCEL_LABEL, CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT } from '../strings';
+import { CANCEL_LABEL, CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT } from '../ui-texts';
 
 const ConfirmationModal = ({
   isOpen,

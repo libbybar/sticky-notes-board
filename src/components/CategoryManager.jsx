@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import * as S from './CategoryManager.styles';
+import * as S from '../style/CategoryManager.styles';
 import { Plus, X, Palette } from 'lucide-react';
 import ValidationTooltip from './ValidationTooltip';
-import { CATEGORY_MANAGER_ERROR_EMPTY, CATEGORY_MANAGER_ERROR_DUPLICATE, CATEGORY_MANAGER_NAME_PLACEHOLDER } from '../strings';
-import { FILTER_ALL, CATEGORY_GENERAL } from '../constants';
+import {
+  CATEGORY_MANAGER_ERROR_EMPTY,
+  CATEGORY_MANAGER_ERROR_DUPLICATE,
+  CATEGORY_MANAGER_NAME_PLACEHOLDER
+} from '../ui-texts';
+import { CATEGORY_GENERAL, FILTER_ALL } from '../constants';
 
 
 const getRandomColor = () => {

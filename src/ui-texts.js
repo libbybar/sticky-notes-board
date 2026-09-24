@@ -43,7 +43,7 @@ export const TODO_APP_CLEAR_BOARD_TOOLTIP = 'איפוס לוח';
 export const TODO_APP_DELETE_TASK_TITLE = 'למחוק את הפתק?';
 export const TODO_APP_DELETE_TASK_MESSAGE_PREFIX = 'הפעולה תמחוק לצמיתות את הפתק:';
 export const TODO_APP_DELETE_CATEGORY_TITLE = 'למחוק את התווית?';
-export const TODO_APP_DELETE_CATEGORY_CONFIRM_PREFIX = 'האם את בטוחה שברצונך למחוק את התווית ';
+export const TODO_APP_DELETE_CATEGORY_CONFIRM_PREFIX = 'נא לאשר שברצונך למחוק את התווית ';
 export const TODO_APP_DELETE_CATEGORY_KEPT_NOTICE = (generalCategoryName) =>
   `הפתקים שבה לא יימחקו — הם יעברו לתווית "${generalCategoryName}".`;
 export const TODO_APP_RESET_TITLE = 'איפוס כל הלוח?';
@@ -58,3 +58,9 @@ export const TODO_APP_SELECTION_MODE_ON_LABEL = '✅ סיום בחירה';
 export const TODO_APP_SELECTION_MODE_OFF_LABEL = '☑️ בחירה מרובה';
 export const TODO_APP_BULK_BANNER_SELECTED_COUNT = (count) => `בחרתי ${count} פתקים`;
 export const TODO_APP_CHANGE_CATEGORY_OPTION = 'שינוי תווית';
+export const TODO_APP_EMPTY_BOARD_TITLE = 'הלוח עוד ריק';
+export const TODO_APP_EMPTY_BOARD_MESSAGE =
+  `נדביק את הפתק הראשון? אפשר לכתוב אותו בשדה שמעל וללחוץ על "${TASK_INPUT_SUBMIT_BUTTON}".`;
+export const TODO_APP_NO_RESULTS_TITLE = 'לא נמצאו פתקים';
+export const TODO_APP_NO_RESULTS_MESSAGE = 'אף פתק לא מתאים לחיפוש או לסינון שנבחרו.';
+export const TODO_APP_CLEAR_FILTERS_LABEL = 'ניקוי חיפוש וסינון';

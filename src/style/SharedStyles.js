@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { PRIMARY_COLOR, BORDER_LIGHT, TEXT_MAIN } from '../constants';
+import { PRIMARY_COLOR, BORDER_LIGHT, TEXT_MAIN } from './style-constants';
 
 export const BaseButton = styled.button`
   /* ערכים קבועים לאחידות */

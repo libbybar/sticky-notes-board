@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import * as S from './Login.styles';
+import * as S from '../style/Login.styles';
 import { UserCircle2, ArrowLeftCircle } from 'lucide-react';
-import { LOGIN_TITLE, LOGIN_SUBTITLE, LOGIN_NAME_PLACEHOLDER, LOGIN_SUBMIT_BUTTON } from '../strings';
+import { LOGIN_TITLE, LOGIN_SUBTITLE, LOGIN_NAME_PLACEHOLDER, LOGIN_SUBMIT_BUTTON } from '../ui-texts';
 
 
 const Login = ({ onLogin }) => {

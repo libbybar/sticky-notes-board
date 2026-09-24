@@ -1,13 +1,12 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
+import { DEFAULT_COLOR, DEFAULT_BORDER } from './style/style-constants';
 import {
-  STORAGE_KEY_TASKS,
-  STORAGE_KEY_USER,
-  STORAGE_KEY_CATEGORIES,
   CATEGORY_GENERAL,
-  DEFAULT_COLOR,
-  DEFAULT_BORDER
+  STORAGE_KEY_CATEGORIES,
+  STORAGE_KEY_TASKS,
+  STORAGE_KEY_USER
 } from './constants';
 import {
   CANCEL_LABEL,
@@ -21,12 +20,17 @@ import {
   TASK_INPUT_ERROR_EMPTY,
   TASK_INPUT_PLACEHOLDER,
   TASK_INPUT_SUBMIT_BUTTON,
+  TODO_APP_CLEAR_FILTERS_LABEL,
   TODO_APP_DELETE_TASK_TITLE,
+  TODO_APP_EMPTY_BOARD_MESSAGE,
+  TODO_APP_EMPTY_BOARD_TITLE,
   TODO_APP_FILTER_IMPORTANT_LABEL,
   TODO_APP_FILTER_IN_PROGRESS_LABEL,
   TODO_APP_FILTER_OVERDUE_LABEL,
+  TODO_APP_NO_RESULTS_MESSAGE,
+  TODO_APP_NO_RESULTS_TITLE,
   TODO_APP_SEARCH_PLACEHOLDER
-} from './strings';
+} from './ui-texts';
 
 const WORK_CATEGORY = 'עבודה';
 const PAST_DEADLINE = '2000-01-01';
@@ -268,6 +272,67 @@ describe('note status', () => {
     userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_CHECK_TITLE_COMPLETED }));
 
     expect(screen.getByRole('button', { name: STICKY_NOTE_CHECK_TITLE_PENDING })).toBeInTheDocument();
+  });
+});
+
+describe('empty states', () => {
+  test('a board without notes points to creating the first note', () => {
+    seedBoard();
+    render(<App />);
+
+    expect(screen.getByText(TODO_APP_EMPTY_BOARD_TITLE)).toBeInTheDocument();
+    expect(screen.getByText(TODO_APP_EMPTY_BOARD_MESSAGE)).toBeInTheDocument();
+    expect(screen.queryByText(TODO_APP_NO_RESULTS_TITLE)).not.toBeInTheDocument();
+  });
+
+  test('a board with notes does not show the empty board message', () => {
+    seedBoard({ tasks: [makeTask({ text: 'a note' })] });
+    render(<App />);
+
+    expect(screen.queryByText(TODO_APP_EMPTY_BOARD_TITLE)).not.toBeInTheDocument();
+    expect(screen.queryByText(TODO_APP_NO_RESULTS_TITLE)).not.toBeInTheDocument();
+  });
+
+  test('a search that matches nothing says so instead of calling the board empty', () => {
+    seedBoard({ tasks: [makeTask({ text: 'a note' })] });
+    render(<App />);
+
+    searchFor('zzz');
+
+    expect(screen.getByText(TODO_APP_NO_RESULTS_TITLE)).toBeInTheDocument();
+    expect(screen.getByText(TODO_APP_NO_RESULTS_MESSAGE)).toBeInTheDocument();
+    expect(screen.queryByText(TODO_APP_EMPTY_BOARD_TITLE)).not.toBeInTheDocument();
+  });
+
+  test('a status filter that matches nothing says so', () => {
+    seedBoard({ tasks: [makeTask({ text: 'a note' })] });
+    render(<App />);
+
+    clickFilter(TODO_APP_FILTER_OVERDUE_LABEL);
+
+    expect(screen.getByText(TODO_APP_NO_RESULTS_TITLE)).toBeInTheDocument();
+  });
+
+  test('the clear button resets the search, the category and the status filters together', () => {
+    seedBoard({ tasks: [makeTask({ text: 'plain note' })] });
+    render(<App />);
+    searchFor('plain');
+    userEvent.click(getCategoryTag(WORK_CATEGORY));
+    clickFilter(TODO_APP_FILTER_IMPORTANT_LABEL);
+    expect(screen.getByText(TODO_APP_NO_RESULTS_TITLE)).toBeInTheDocument();
+
+    userEvent.click(screen.getByRole('button', { name: TODO_APP_CLEAR_FILTERS_LABEL }));
+
+    expect(screen.getByText('plain note')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(TODO_APP_SEARCH_PLACEHOLDER.trim())).toHaveValue('');
+    expect(screen.queryByText(TODO_APP_NO_RESULTS_TITLE)).not.toBeInTheDocument();
+  });
+
+  test('a board with no notes offers no clear button', () => {
+    seedBoard();
+    render(<App />);
+
+    expect(screen.queryByRole('button', { name: TODO_APP_CLEAR_FILTERS_LABEL })).not.toBeInTheDocument();
   });
 });
 

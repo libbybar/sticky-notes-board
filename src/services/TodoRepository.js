@@ -1,9 +1,8 @@
-import { STORAGE_KEY_TASKS, 
-    STORAGE_KEY_USER, 
+import { STORAGE_KEY_TASKS,
+    STORAGE_KEY_USER,
     STORAGE_KEY_CATEGORIES,
-    CATEGORY_GENERAL,
-    DEFAULT_COLOR,
-    DEFAULT_BORDER} from '../constants';
+    CATEGORY_GENERAL } from '../constants';
+import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
 
 const createGeneralCategory = () => (
     { name: CATEGORY_GENERAL, color: DEFAULT_COLOR, borderColor: DEFAULT_BORDER }

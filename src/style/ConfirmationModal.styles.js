@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { BaseButton } from './SharedStyles';
-import { DANGER_COLOR, TEXT_MAIN, TEXT_MUTED } from '../constants';
+import { DANGER_COLOR, TEXT_MAIN, TEXT_MUTED } from './style-constants';
 
 export const Overlay = styled.div`
   position: fixed;

@@ -1,7 +1,8 @@
 import React from 'react';
-import * as S from './StickyNote.styles';
+import * as S from '../style/StickyNote.styles';
 import { Check, Trash2, Pin, Star } from 'lucide-react';
-import { DEFAULT_COLOR, DEFAULT_BORDER, CATEGORY_GENERAL } from '../constants';
+import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
+import { CATEGORY_GENERAL } from '../constants';
 import {
   STICKY_NOTE_DELETE_TITLE,
   STICKY_NOTE_MARK_IMPORTANT,
@@ -12,7 +13,7 @@ import {
   STICKY_NOTE_CHECK_TITLE_PENDING,
   STICKY_NOTE_CHECK_TITLE_IN_PROGRESS,
   STICKY_NOTE_CHECK_TITLE_COMPLETED
-} from '../strings';
+} from '../ui-texts';
 
 const StickyNote = ({
   task,

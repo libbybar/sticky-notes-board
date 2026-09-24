@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import * as S from './TaskInput.styles';
+import * as S from '../style/TaskInput.styles';
 import { PlusCircle } from 'lucide-react';
 import ValidationTooltip from './ValidationTooltip';
-import { TASK_INPUT_ERROR_EMPTY, TASK_INPUT_PLACEHOLDER, TASK_INPUT_SUBMIT_BUTTON } from '../strings';
+import { TASK_INPUT_ERROR_EMPTY, TASK_INPUT_PLACEHOLDER, TASK_INPUT_SUBMIT_BUTTON } from '../ui-texts';
 import { CATEGORY_GENERAL } from '../constants';
 
 const TaskInput = ({ onAdd, categories }) => {

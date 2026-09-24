@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { CATEGORY_GENERAL, DEFAULT_COLOR, DEFAULT_BORDER, STATUS_PENDING, FILTER_ALL } from '../constants';
+import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
+import { CATEGORY_GENERAL, STATUS_PENDING, FILTER_ALL } from '../constants';
 import { TodoRepository } from '../services/TodoRepository';
 
 
@@ -93,6 +94,11 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
         setTasks([]);
         setCategories([{ name: CATEGORY_GENERAL, color: DEFAULT_COLOR, borderColor: DEFAULT_BORDER }]);
     };
+    const clearFilters = () => {
+        setSearchTerm('');
+        setSelectedFilter(FILTER_ALL);
+        setActiveStatusFilter('all');
+    };
     const isTaskOverdue = (task) => {
         if (!task.deadline || task.completed) return false;
         return new Date(task.deadline) < new Date().setHours(0, 0, 0, 0);
@@ -121,6 +127,7 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
         userName,
         categories,
         visibleTasks,
+        hasTasks: tasks.length > 0,
         searchTerm,
         selectedFilter,
         activeStatusFilter,
@@ -142,6 +149,7 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
         deleteMultipleTasks,
         updateMultipleTasksCategory,
         moveCategoryTasks,
+        clearFilters,
         clearAppData
     };
 };

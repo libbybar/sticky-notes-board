@@ -7,6 +7,7 @@ import StickyNote from './components/StickyNote';
 import Login from './components/Login';
 import CategoryManager from './components/CategoryManager';
 import ConfirmationModal from './components/ConfirmationModal';
+import EmptyState from './components/EmptyState';
 import myBackgroundImage from './assets/my-background.jpeg';
 import { useBulkSelection } from './Hooks/useBulkSelection';
 import { CATEGORY_GENERAL, FILTER_ALL } from './constants';
@@ -30,8 +31,13 @@ import {
   TODO_APP_SELECTION_MODE_ON_LABEL,
   TODO_APP_SELECTION_MODE_OFF_LABEL,
   TODO_APP_BULK_BANNER_SELECTED_COUNT,
-  TODO_APP_CHANGE_CATEGORY_OPTION
-} from './strings';
+  TODO_APP_CHANGE_CATEGORY_OPTION,
+  TODO_APP_EMPTY_BOARD_TITLE,
+  TODO_APP_EMPTY_BOARD_MESSAGE,
+  TODO_APP_NO_RESULTS_TITLE,
+  TODO_APP_NO_RESULTS_MESSAGE,
+  TODO_APP_CLEAR_FILTERS_LABEL
+} from './ui-texts';
 
 
 const AppContainer = styled.div`
@@ -194,6 +200,7 @@ const TodoApp = () => {
         userName,
         categories,
         visibleTasks,
+        hasTasks,
         searchTerm,
         selectedFilter,
         activeStatusFilter,
@@ -215,6 +222,7 @@ const TodoApp = () => {
         deleteMultipleTasks,
         updateMultipleTasksCategory,
         moveCategoryTasks,
+        clearFilters,
         clearAppData
     } = useTodoManager();
 
@@ -353,6 +361,18 @@ const confirmCategoryDelete = () => {
             )}
 
             <NotesGrid $isSelectionMode={isSelectionMode}>
+                {visibleTasks.length === 0 && (hasTasks
+                    ? <EmptyState
+                        title={TODO_APP_NO_RESULTS_TITLE}
+                        message={TODO_APP_NO_RESULTS_MESSAGE}
+                        actionLabel={TODO_APP_CLEAR_FILTERS_LABEL}
+                        onAction={clearFilters}
+                    />
+                    : <EmptyState
+                        title={TODO_APP_EMPTY_BOARD_TITLE}
+                        message={TODO_APP_EMPTY_BOARD_MESSAGE}
+                    />
+                )}
                 {visibleTasks.map(task => (
                     <StickyNote
                         key={task.id}

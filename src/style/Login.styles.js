@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { BaseButton, BaseInput } from './SharedStyles'; 
-import { APP_BACKGROUND, PRIMARY_COLOR, TEXT_MAIN, TEXT_MUTED } from '../constants';
+import { APP_BACKGROUND, PRIMARY_COLOR, TEXT_MAIN, TEXT_MUTED } from './style-constants';
 
 export const LoginOverlay = styled.div`
   position: fixed;

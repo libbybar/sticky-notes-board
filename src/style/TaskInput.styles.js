@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { PRIMARY_COLOR, TEXT_MAIN, TEXT_MUTED } from '../constants';
+import { PRIMARY_COLOR, TEXT_MAIN, TEXT_MUTED } from './style-constants';
 
 export const InputContainer = styled.div`
   width: 100%;
