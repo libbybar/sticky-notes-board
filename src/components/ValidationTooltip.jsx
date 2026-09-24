@@ -48,7 +48,7 @@ const ValidationTooltip = ({ message, onClear }) => {
 
   if (!message) return null;
 
-  return <TooltipContainer>{message}</TooltipContainer>;
+  return <TooltipContainer role="alert">{message}</TooltipContainer>;
 };
 
 export default ValidationTooltip;

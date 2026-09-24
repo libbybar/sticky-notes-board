@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import * as S from '../style/TaskInput.styles';
 import { PlusCircle } from 'lucide-react';
 import ValidationTooltip from './ValidationTooltip';
-import { TASK_INPUT_ERROR_EMPTY, TASK_INPUT_PLACEHOLDER, TASK_INPUT_SUBMIT_BUTTON } from '../ui-texts';
+import {
+  TASK_INPUT_ERROR_EMPTY,
+  TASK_INPUT_PLACEHOLDER,
+  TASK_INPUT_SUBMIT_BUTTON,
+  TASK_INPUT_DATE_LABEL,
+  TASK_INPUT_CATEGORY_LABEL
+} from '../ui-texts';
 import { CATEGORY_GENERAL } from '../constants';
 
 const TaskInput = ({ onAdd, categories }) => {
@@ -46,6 +52,7 @@ if (!text.trim()) {
         <S.TextInput
           type="text"
           placeholder={TASK_INPUT_PLACEHOLDER}
+          aria-label={TASK_INPUT_PLACEHOLDER}
           value={text}
           onChange={(e) => {
             if (error) setError(''); 
@@ -56,11 +63,13 @@ if (!text.trim()) {
         
         <S.DateInput
           type="date"
+          aria-label={TASK_INPUT_DATE_LABEL}
           value={deadline}
           onChange={(e) => setDeadline(e.target.value)}
         />
 
         <S.CategorySelect
+          aria-label={TASK_INPUT_CATEGORY_LABEL}
           value={selectedCategory}
           onChange={(e) => setSelectedCategory(e.target.value)}
         >

@@ -37,6 +37,16 @@ export const Tag = styled.div`
     transform: scale(1.05);
   }
 `;
+export const TagName = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+`;
 export const ColorCircle = styled.input`
   width: 16px;
   height: 16px;
@@ -60,6 +70,12 @@ export const IconContainer = styled.div`
   justify-content: center;
   width: 20px;
   height: 20px;
+
+  &:has(input:focus-visible) {
+    outline: 2px solid ${PRIMARY_COLOR};
+    outline-offset: 2px;
+    border-radius: 50%;
+  }
 `;
 export const DeleteIcon = styled.button`
   background: none;

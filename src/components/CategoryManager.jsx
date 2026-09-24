@@ -5,7 +5,11 @@ import ValidationTooltip from './ValidationTooltip';
 import {
   CATEGORY_MANAGER_ERROR_EMPTY,
   CATEGORY_MANAGER_ERROR_DUPLICATE,
-  CATEGORY_MANAGER_NAME_PLACEHOLDER
+  CATEGORY_MANAGER_NAME_PLACEHOLDER,
+  CATEGORY_MANAGER_DELETE_LABEL,
+  CATEGORY_MANAGER_COLOR_LABEL,
+  CATEGORY_MANAGER_ADD_LABEL,
+  CATEGORY_MANAGER_NEW_COLOR_LABEL
 } from '../ui-texts';
 import { CATEGORY_GENERAL, FILTER_ALL } from '../constants';
 
@@ -63,13 +67,12 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
               $isSelected={isSelected}
               $isDimmed={isDimmed}
               onClick={() => onFilter(cat.name)}
-              tabIndex="0"
-              onKeyDown={(e) => e.key === 'Enter' && onFilter(cat.name)}
             >
               <S.IconContainer>
                 <Palette size={16} color="#64748b" />
                 <S.ColorCircle
                   type="color"
+                  aria-label={CATEGORY_MANAGER_COLOR_LABEL(cat.name)}
                   value={cat.color}
                   onChange={(e) => {
                     e.stopPropagation();
@@ -77,9 +80,9 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
                   }}
                 />
               </S.IconContainer>
-              <span>{cat.name}</span>
+              <S.TagName type="button" aria-pressed={isSelected}>{cat.name}</S.TagName>
               {cat.name !== CATEGORY_GENERAL && (
-                <S.DeleteIcon onClick={(e) => {
+                <S.DeleteIcon aria-label={CATEGORY_MANAGER_DELETE_LABEL(cat.name)} onClick={(e) => {
                   e.stopPropagation();
                   onDelete(cat.name);
                 }}>
@@ -95,6 +98,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
         <S.TinyInput
           $size="small"
           placeholder={CATEGORY_MANAGER_NAME_PLACEHOLDER}
+          aria-label={CATEGORY_MANAGER_NAME_PLACEHOLDER}
           value={newName}
           onChange={(e) => {
             if (error) setError('');
@@ -104,10 +108,11 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
         />
         <S.ColorInput
           type="color"
+          aria-label={CATEGORY_MANAGER_NEW_COLOR_LABEL}
           value={newColor}
           onChange={(e) => setNewColor(e.target.value)}
         />
-        <S.IconButton type="submit">
+        <S.IconButton type="submit" aria-label={CATEGORY_MANAGER_ADD_LABEL}>
           <Plus size={20} />
         </S.IconButton>
       </S.AddForm>

@@ -5,6 +5,11 @@ import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
 import { CATEGORY_GENERAL } from '../constants';
 import {
   STICKY_NOTE_DELETE_TITLE,
+  STICKY_NOTE_TITLE_PLACEHOLDER,
+  STICKY_NOTE_TEXT_LABEL,
+  STICKY_NOTE_DATE_LABEL,
+  STICKY_NOTE_CATEGORY_LABEL,
+  STICKY_NOTE_SELECT_LABEL,
   STICKY_NOTE_MARK_IMPORTANT,
   STICKY_NOTE_UNMARK_IMPORTANT,
   STICKY_NOTE_NO_DEADLINE_LABEL,
@@ -81,6 +86,9 @@ const StickyNote = ({
           <S.HeaderActions>
             {isSelectionMode && (
               <S.CustomSelectionCircle
+                type="button"
+                aria-label={STICKY_NOTE_SELECT_LABEL}
+                aria-pressed={!!isSelected}
                 $isSelected={isSelected}
                 onClick={(e) => {
                   e.stopPropagation();
@@ -89,6 +97,7 @@ const StickyNote = ({
               />
             )}
             <S.CategoryTag
+              aria-label={STICKY_NOTE_CATEGORY_LABEL}
               value={category}
               onChange={(e) => onUpdateCategory(id, e.target.value)}
             >
@@ -113,6 +122,10 @@ const StickyNote = ({
             <Star size={18} fill={isImportant ? "currentColor" : "none"} />
           </S.StarButton>
           <S.TitleInput
+            role="textbox"
+            aria-label={STICKY_NOTE_TITLE_PLACEHOLDER}
+            aria-multiline="false"
+            aria-readonly={completed}
             contentEditable={!completed}
             suppressContentEditableWarning={true}
             $isCompleted={completed}
@@ -125,6 +138,10 @@ const StickyNote = ({
 
       <S.ContentArea dir="rtl">
         <S.TaskText
+          role="textbox"
+          aria-label={STICKY_NOTE_TEXT_LABEL}
+          aria-multiline="true"
+          aria-readonly={completed}
           $isCompleted={completed}
           contentEditable={!completed}
           suppressContentEditableWarning={true}
@@ -140,6 +157,7 @@ const StickyNote = ({
             <span style={{ fontSize: '0.63rem' }}>📅</span>
             <S.DateText
               type="date"
+              aria-label={STICKY_NOTE_DATE_LABEL}
               $isOverdue={isOverdue}
               value={deadlineValue}
               onChange={(e) => onUpdateDeadline && onUpdateDeadline(id, e.target.value)}

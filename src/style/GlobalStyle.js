@@ -1,4 +1,5 @@
 import { createGlobalStyle } from 'styled-components';
+import { PRIMARY_COLOR } from './style-constants';
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -19,6 +20,24 @@ const GlobalStyle = createGlobalStyle`
 
   input, button, select, textarea {
     font-family: 'Varela Round', 'Assistant', sans-serif;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid ${PRIMARY_COLOR};
+    outline-offset: 2px;
+  }
+
+  [role="dialog"] button:focus {
+    outline: 2px solid ${PRIMARY_COLOR};
+    outline-offset: 2px;
+  }
+
+  [contenteditable]:focus-visible {
+    outline: 2px solid ${PRIMARY_COLOR};
+    outline-offset: -2px;
   }
 `;
 

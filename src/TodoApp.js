@@ -289,7 +289,7 @@ const confirmCategoryDelete = () => {
 
     return (
         <AppContainer $isSelectionMode={isSelectionMode}>
-            <ClearBoardButton onClick={() => setIsResetModalOpen(true)}>✕</ClearBoardButton>
+            <ClearBoardButton aria-label={TODO_APP_CLEAR_BOARD_TOOLTIP} onClick={() => setIsResetModalOpen(true)}>✕</ClearBoardButton>
 
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}
@@ -335,14 +335,18 @@ const confirmCategoryDelete = () => {
             <ControlBar>
                 <SearchInput
                     placeholder={TODO_APP_SEARCH_PLACEHOLDER}
+                    aria-label={TODO_APP_SEARCH_PLACEHOLDER}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 <FilterButton $active={activeStatusFilter === 'important'}
+                    aria-pressed={activeStatusFilter === 'important'}
                     onClick={() => setActiveStatusFilter(prev => prev === 'important' ? 'all' : 'important')}>{TODO_APP_FILTER_IMPORTANT_LABEL}</FilterButton>
                 <FilterButton $active={activeStatusFilter === 'in-progress'}
+                    aria-pressed={activeStatusFilter === 'in-progress'}
                     onClick={() => setActiveStatusFilter(prev => prev === 'in-progress' ? 'all' : 'in-progress')}>{TODO_APP_FILTER_IN_PROGRESS_LABEL}</FilterButton>
                 <FilterButton $active={activeStatusFilter === 'overdue'}
+                    aria-pressed={activeStatusFilter === 'overdue'}
                     onClick={() => setActiveStatusFilter(prev => prev === 'overdue' ? 'all' : 'overdue')}>{TODO_APP_FILTER_OVERDUE_LABEL}</FilterButton>
                 <FilterButton $active={isSelectionMode}
                     onClick={toggleSelectionMode}>{isSelectionMode ? TODO_APP_SELECTION_MODE_ON_LABEL : TODO_APP_SELECTION_MODE_OFF_LABEL}</FilterButton>

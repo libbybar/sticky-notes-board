@@ -259,6 +259,12 @@ export const DeadlineRow = styled.div`
   align-items: center;
   gap: 5px;
   position: relative;
+
+  &:has(input:focus) {
+    outline: 2px solid ${PRIMARY_COLOR};
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 `;
 export const DateText = styled.input`
   position: absolute;

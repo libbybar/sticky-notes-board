@@ -28,6 +28,7 @@ const Login = ({ onLogin }) => {
           <S.Input
             type="text"
             placeholder={LOGIN_NAME_PLACEHOLDER}
+            aria-label={LOGIN_NAME_PLACEHOLDER}
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus

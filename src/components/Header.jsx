@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { HEADER_GREETING_PREFIX, HEADER_GUEST_NAME, HEADER_SUBTITLE } from '../ui-texts';
+import { HEADER_GREETING_PREFIX, HEADER_SUBTITLE } from '../ui-texts';
 
 const HeaderContainer = styled.header`
   margin-bottom: 3rem;
@@ -32,19 +32,15 @@ const SubTitle = styled.p`
   margin-top: 0.5rem;
   font-family: 'Amatic SC', cursive;
 `;
-const Header = ({ userName }) => {
-  const displayName = userName || HEADER_GUEST_NAME;
-
-  return (
-    <HeaderContainer>
-      <MainGreeting>
-        {HEADER_GREETING_PREFIX}<NameHighlight>{displayName}</NameHighlight>
-      </MainGreeting>
-      <SubTitle>
-        {HEADER_SUBTITLE}
-      </SubTitle>
-    </HeaderContainer>
-  );
-};
+const Header = ({ userName }) => (
+  <HeaderContainer>
+    <MainGreeting>
+      {HEADER_GREETING_PREFIX}<NameHighlight>{userName}</NameHighlight>
+    </MainGreeting>
+    <SubTitle>
+      {HEADER_SUBTITLE}
+    </SubTitle>
+  </HeaderContainer>
+);
 
 export default Header;
