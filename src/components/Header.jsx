@@ -7,6 +7,10 @@ const HeaderContainer = styled.header`
   text-align: right;
   padding: 1rem;
   width: 100%;
+
+  @media (max-width: 600px) {
+    margin-bottom: 1.5rem;
+  }
 `;
 const MainGreeting = styled.h1`
   font-family: 'Assistant', sans-serif;
@@ -14,6 +18,7 @@ const MainGreeting = styled.h1`
   font-weight: 700;
   margin: 0;
   color: #1e293b;
+  overflow-wrap: anywhere;
 
   
   @media (max-width: 768px) {

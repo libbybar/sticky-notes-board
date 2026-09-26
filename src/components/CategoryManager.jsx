@@ -66,7 +66,6 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
               $borderColor={cat.borderColor}
               $isSelected={isSelected}
               $isDimmed={isDimmed}
-              onClick={() => onFilter(cat.name)}
             >
               <S.IconContainer>
                 <Palette size={16} color="#64748b" />
@@ -80,7 +79,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
                   }}
                 />
               </S.IconContainer>
-              <S.TagName type="button" aria-pressed={isSelected}>{cat.name}</S.TagName>
+              <S.TagName type="button" aria-pressed={isSelected} onClick={() => onFilter(cat.name)}>{cat.name}</S.TagName>
               {cat.name !== CATEGORY_GENERAL && (
                 <S.DeleteIcon aria-label={CATEGORY_MANAGER_DELETE_LABEL(cat.name)} onClick={(e) => {
                   e.stopPropagation();

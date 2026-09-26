@@ -8,9 +8,12 @@ export const HEADER_SUBTITLE = 'מה נדביק על הלוח היום?';
 
 // Login.jsx
 export const LOGIN_TITLE = 'שלום לך';
-export const LOGIN_SUBTITLE = 'מה שמך?';
+export const LOGIN_SUBTITLE = 'איך קוראים לך?';
+export const LOGIN_INTRO = 'לוח שעם אישי לפתקים, עם תוויות צבעוניות, תאריכי יעד וחיפוש.';
 export const LOGIN_NAME_PLACEHOLDER = 'פה המקום להכניס שם';
-export const LOGIN_SUBMIT_BUTTON = 'להיכנס לאפליקציה';
+export const LOGIN_NAME_ERROR = 'נדרש שם של שני תווים לפחות.';
+export const LOGIN_STORAGE_NOTICE = 'השם והפתקים נשמרים בדפדפן הזה בלבד, בלי סנכרון בין מכשירים.';
+export const LOGIN_SUBMIT_BUTTON = 'ללוח שלי';
 
 // TaskInput.jsx
 export const TASK_INPUT_ERROR_EMPTY = 'נדרש טקסט כדי להדביק פתק';

@@ -19,7 +19,10 @@ import {
   CATEGORY_MANAGER_NAME_PLACEHOLDER,
   CATEGORY_MANAGER_NEW_COLOR_LABEL,
   CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT,
+  LOGIN_INTRO,
+  LOGIN_NAME_ERROR,
   LOGIN_NAME_PLACEHOLDER,
+  LOGIN_STORAGE_NOTICE,
   LOGIN_SUBMIT_BUTTON,
   STICKY_NOTE_CATEGORY_LABEL,
   STICKY_NOTE_CHECK_TITLE_COMPLETED,
@@ -358,6 +361,92 @@ describe('empty states', () => {
   });
 });
 
+describe('the welcome screen', () => {
+  const getNameField = () => screen.getByRole('textbox', { name: LOGIN_NAME_PLACEHOLDER });
+  const submitName = () => userEvent.click(screen.getByRole('button', { name: LOGIN_SUBMIT_BUTTON }));
+  const enterName = (name) => {
+    userEvent.type(getNameField(), name);
+    submitName();
+  };
+
+  test('explains what the board is and where the data is kept', () => {
+    render(<App />);
+
+    expect(screen.getByText(LOGIN_INTRO)).toBeInTheDocument();
+    expect(screen.getByText(LOGIN_STORAGE_NOTICE)).toBeInTheDocument();
+  });
+
+  test('offers only one way in: entering a name', () => {
+    render(<App />);
+
+    expect(screen.getAllByRole('button')).toHaveLength(1);
+  });
+
+  test.each([
+    ['nothing', ''],
+    ['only spaces', '   '],
+    ['a single character', 'ל']
+  ])('entering %s explains the name is required and keeps the board closed', (_, name) => {
+    render(<App />);
+
+    if (name) userEvent.type(getNameField(), name);
+    submitName();
+
+    expect(screen.getByRole('alert')).toHaveTextContent(LOGIN_NAME_ERROR);
+    expect(screen.queryByRole('textbox', { name: TASK_INPUT_PLACEHOLDER })).not.toBeInTheDocument();
+  });
+
+  test('after a rejected name the field is marked invalid, described by the error, and focused', () => {
+    render(<App />);
+
+    submitName();
+
+    const nameField = getNameField();
+    expect(nameField).toHaveAttribute('aria-invalid', 'true');
+    expect(nameField).toHaveAccessibleDescription(LOGIN_NAME_ERROR);
+    expect(nameField).toHaveFocus();
+  });
+
+  test('the error stays while the name is still too short', () => {
+    render(<App />);
+    submitName();
+
+    userEvent.type(getNameField(), 'ל');
+
+    expect(screen.getByRole('alert')).toHaveTextContent(LOGIN_NAME_ERROR);
+    expect(getNameField()).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('the error stays while the name is only spaces around too few characters', () => {
+    render(<App />);
+    submitName();
+
+    userEvent.type(getNameField(), '  ל  ');
+
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  test('the error goes away once the name is long enough', () => {
+    render(<App />);
+    submitName();
+
+    userEvent.type(getNameField(), 'לי');
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+    expect(getNameField()).toHaveAttribute('aria-invalid', 'false');
+  });
+
+  test('a valid name opens the board and is stored without surrounding spaces', () => {
+    render(<App />);
+
+    enterName('  ליבי  ');
+
+    expect(screen.getByRole('textbox', { name: TASK_INPUT_PLACEHOLDER })).toBeInTheDocument();
+    expect(screen.getByText('ליבי')).toBeInTheDocument();
+    expect(localStorage.getItem(STORAGE_KEY_USER)).toBe('ליבי');
+  });
+});
+
 describe('reloading the app', () => {
   test('keeps the name and the notes', () => {
     const { unmount } = render(<App />);
@@ -600,6 +689,49 @@ describe('category tags as filter buttons', () => {
 
     expect(getCategoryTag(WORK_CATEGORY)).toHaveAttribute('aria-pressed', 'false');
     expect(getCategoryTag(CATEGORY_GENERAL)).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  describe('using the other controls of a tag', () => {
+    const seedWorkAndGeneralNotes = () =>
+      seedBoard({
+        tasks: [
+          makeTask({ text: 'work note', category: WORK_CATEGORY }),
+          makeTask({ text: 'general note' })
+        ]
+      });
+
+    test('clicking the color control does not turn the category filter on', () => {
+      seedWorkAndGeneralNotes();
+      render(<App />);
+
+      userEvent.click(screen.getByLabelText(CATEGORY_MANAGER_COLOR_LABEL(WORK_CATEGORY)));
+
+      expect(getCategoryTag(WORK_CATEGORY)).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByText('work note')).toBeInTheDocument();
+      expect(screen.getByText('general note')).toBeInTheDocument();
+    });
+
+    test('changing a category color leaves the filter and the notes as they were', () => {
+      seedWorkAndGeneralNotes();
+      render(<App />);
+      const colorControl = screen.getByLabelText(CATEGORY_MANAGER_COLOR_LABEL(WORK_CATEGORY));
+
+      userEvent.click(colorControl);
+      fireEvent.change(colorControl, { target: { value: '#ff0000' } });
+
+      expect(getCategoryTag(WORK_CATEGORY)).toHaveAttribute('aria-pressed', 'false');
+      expect(screen.getByText('general note')).toBeInTheDocument();
+    });
+
+    test('opening and cancelling the delete dialog leaves the filter off', () => {
+      seedWorkAndGeneralNotes();
+      render(<App />);
+
+      userEvent.click(screen.getByRole('button', { name: CATEGORY_MANAGER_DELETE_LABEL(WORK_CATEGORY) }));
+      userEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: CANCEL_LABEL }));
+
+      expect(getCategoryTag(WORK_CATEGORY)).toHaveAttribute('aria-pressed', 'false');
+    });
   });
 
   test.each([

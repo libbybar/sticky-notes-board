@@ -8,6 +8,7 @@ import Login from './components/Login';
 import CategoryManager from './components/CategoryManager';
 import ConfirmationModal from './components/ConfirmationModal';
 import EmptyState from './components/EmptyState';
+import { touchTarget } from './style/SharedStyles';
 import myBackgroundImage from './assets/my-background.jpeg';
 import { useBulkSelection } from './Hooks/useBulkSelection';
 import { CATEGORY_GENERAL, FILTER_ALL } from './constants';
@@ -44,6 +45,10 @@ const AppContainer = styled.div`
   min-height: 100vh;  padding: 2rem;
   background: radial-gradient(circle at top right, #fdf2ff, #f0f4ff, #fff5f5);
   direction: rtl;
+
+  @media (max-width: 600px) {
+    padding: 2.5rem 1rem 1rem;
+  }
 `;
 const ControlBar = styled.div`
   display: flex;
@@ -79,6 +84,12 @@ const BulkActionBanner = styled.div`
     color: #1e293b;
     font-family: 'Assistant', sans-serif;
   }
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
 `;
 const CategorySelect = styled.select`
   padding: 0.5rem;
@@ -89,6 +100,10 @@ const CategorySelect = styled.select`
   cursor: pointer;
   outline: none;
   color: #1e293b;
+
+  @media (max-width: 600px) {
+    font-size: 1rem;
+  }
 `;
 const ActionButton = styled.button`
   padding: 0.5rem 1rem;
@@ -113,6 +128,10 @@ const SearchInput = styled.input`
   flex: 1;
   min-width: 200px;
   font-family: 'Assistant', sans-serif;
+
+  @media (max-width: 600px) {
+    font-size: 1rem;
+  }
 `;
 const FilterButton = styled.button`
   padding: 0.4rem 0.8rem;
@@ -126,15 +145,25 @@ const FilterButton = styled.button`
   gap: 5px;
   font-size: 0.9rem;
   transition: all 0.2s;
+
+  @media (pointer: coarse) {
+    min-height: 40px;
+  }
 `;
 const NotesGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
   gap: 1.5rem;
   max-width: 1200px;
   margin: 2rem auto;
   padding: 3rem 2rem;
   position: relative;
+
+  @media (max-width: 600px) {
+    gap: 1rem;
+    margin: 1rem auto;
+    padding: 2rem 0.75rem;
+  }
 
   background-color: #bc8f6f;
   background-image: 
@@ -142,6 +171,10 @@ const NotesGrid = styled.div`
     radial-gradient(circle at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.15) 100%);
 border: 12px solid #5d4037;
   border-radius: 8px;
+
+  @media (max-width: 600px) {
+    border-width: 8px;
+  }
   box-shadow: 
     inset 0 0 30px rgba(0,0,0,0.3),
     0 10px 30px rgba(0,0,0,0.15);
@@ -167,6 +200,7 @@ const ClearBoardButton = styled.button`
   font-size: 14px;
   transition: all 0.2s;
   z-index: 100;
+  ${touchTarget(8)}
 
   &:hover {
     background: #fee2e2;

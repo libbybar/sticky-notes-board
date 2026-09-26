@@ -24,6 +24,11 @@ export const StyledForm = styled.form`
     transform: translateY(-2px);
     background: #ffffff;
   }
+
+  @media (max-width: 600px) {
+    flex-wrap: wrap;
+    padding: 0.75rem;
+  }
 `;
 export const TextInput = styled.input`
   flex: 1;
@@ -40,6 +45,10 @@ export const TextInput = styled.input`
   &::placeholder {
     color: ${TEXT_MUTED};
   }
+
+  @media (max-width: 600px) {
+    flex: 1 1 100%;
+  }
 `;
 export const DateInput = styled.input`
   padding: 0.5rem;
@@ -54,6 +63,12 @@ export const DateInput = styled.input`
   &:focus {
     border-color: #e546c0;
   }
+
+  @media (max-width: 600px) {
+    flex: 1;
+    min-width: 0;
+    font-size: 1rem;
+  }
 `;
 export const CategorySelect = styled.select`
   padding: 0.5rem;
@@ -67,6 +82,12 @@ export const CategorySelect = styled.select`
 
   &:focus {
     border-color: #3ae008;
+  }
+
+  @media (max-width: 600px) {
+    flex: 1;
+    min-width: 0;
+    font-size: 1rem;
   }
 `;
 export const AddButton = styled.button`
@@ -86,5 +107,11 @@ export const AddButton = styled.button`
 
   &:hover {
     filter: brightness(0.9);
+  }
+
+  @media (max-width: 600px) {
+    width: 100%;
+    justify-content: center;
+    margin-right: 0;
   }
 `;

@@ -4,6 +4,7 @@ import {
   TEXT_MUTED, WARNING_COLOR, SUCCESS_COLOR
 } from './style-constants';
 import { STICKY_NOTE_TITLE_PLACEHOLDER } from '../ui-texts';
+import { touchTarget } from './SharedStyles';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -22,6 +23,11 @@ export const NoteContainer = styled.div`
     position: relative;
     cursor: default;
     margin: 1rem;
+
+    @media (max-width: 600px) {
+      margin: 0.5rem auto;
+    }
+
     z-index: ${props => props.$isSelected ? 10 : 1};
     background-color: ${props => props.$bgColor || DEFAULT_COLOR};
     border-top: 8px solid rgba(0, 0, 0, 0.1);
@@ -72,6 +78,14 @@ export const CategoryTag = styled.select`
     cursor: pointer;
     outline: none;
     appearance: none;
+    min-width: 0;
+    max-width: 9rem;
+    text-overflow: ellipsis;
+
+    @media (pointer: coarse) {
+      padding: 9px 5px;
+      margin: -8px 0;
+    }
 `;
 export const DeleteBtn = styled.button`
     background: none;
@@ -80,6 +94,8 @@ export const DeleteBtn = styled.button`
     color: #94a3b8;
     padding: 4px;
     transition: color 0.2s;
+    position: relative;
+    ${touchTarget(9)}
     &:hover { color: ${DANGER_COLOR}; }
 `;
 export const HeaderRow = styled.div`
@@ -109,8 +125,13 @@ export const TitleInput = styled.div`
   font-family: 'Varela Round', sans-serif;
   outline: none;
   flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  unicode-bidi: plaintext;
   color: ${TEXT_MAIN};
   min-height: 1.2rem;
+  max-height: 3.2rem;
+  overflow-y: auto;
   text-decoration: ${props => props.$isCompleted ? 'line-through' : 'none'};
 
   &:empty::before {
@@ -122,6 +143,7 @@ export const TitleInput = styled.div`
 export const ContentArea = styled.div`
   flex: 1;
   height: 9.5rem;
+  min-height: 4rem;
   overflow-y: auto; 
   overflow-x: hidden;
   margin: 0.3rem 0;
@@ -147,10 +169,12 @@ export const TaskText = styled.div`
     color: ${TEXT_MAIN};
     margin: 0;
     word-wrap: break-word;
+    overflow-wrap: anywhere;
     white-space: pre-wrap;
     outline: none;
-    text-align: right;
+    text-align: start;
     direction: rtl;
+    unicode-bidi: plaintext;
     text-decoration: ${props => props.$isCompleted ? 'line-through' : 'none'};
     opacity: ${props => props.$isCompleted ? 0.4 : 1};
     transition: all 0.3s ease;
@@ -241,6 +265,8 @@ export const CustomSelectionCircle = styled.button`
   justify-content: center;
   transition: all 0.2s ease;
   margin-left: 8px;
+  position: relative;
+  ${touchTarget(8)}
 
   &::after {
     content: '✓';
@@ -274,9 +300,15 @@ export const DateText = styled.input`
   bottom: 0;
   width: 100%;
   height: 100%;
-  opacity: 0; 
+  opacity: 0;
   cursor: pointer;
   z-index: 2;
+
+  @media (pointer: coarse) {
+    top: -9px;
+    bottom: -9px;
+    height: calc(100% + 18px);
+  }
 
   &::-webkit-calendar-picker-indicator {
     position: absolute;
@@ -321,9 +353,11 @@ export const CheckButton = styled.button`
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer; 
+    cursor: pointer;
     transition: all 0.2s;
-    border: 2px ${props => props.$status === 'in-progress' ? 'dashed' : 'solid'} 
+    position: relative;
+    ${touchTarget(6)}
+    border: 2px ${props => props.$status === 'in-progress' ? 'dashed' : 'solid'}
            ${props => props.$isCompleted ? SUCCESS_COLOR :
              props.$status === 'in-progress' ? '#3b47cc' : 'rgba(0, 0, 0, 0.1)'};
                

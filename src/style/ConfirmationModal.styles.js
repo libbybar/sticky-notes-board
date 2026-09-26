@@ -24,6 +24,12 @@ export const ModalContainer = styled.div`
   max-width: 400px;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   text-align: center;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  @media (max-width: 600px) {
+    padding: 1.5rem;
+  }
 `;
 export const WarningIcon = styled.div`
   color: ${DANGER_COLOR}; 
@@ -36,8 +42,10 @@ export const Title = styled.h3`
   font-size: 1.5rem;
   color: ${TEXT_MAIN};
   margin-bottom: 0.5rem;
+  overflow-wrap: anywhere;
 `;
 export const Message = styled.p`
+  overflow-wrap: anywhere;
   color: ${TEXT_MUTED};
   margin-bottom: 2rem;
   line-height: 1.5;
@@ -46,6 +54,14 @@ export const ButtonGroup = styled.div`
   display: flex;
   gap: 1rem;
   justify-content: center;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+
+    & > button {
+      width: 100%;
+    }
+  }
 `;
 export const CancelButton = styled(BaseButton)`
   background: #f1f5f9;

@@ -18,7 +18,9 @@ const TooltipContainer = styled.div`
   border-radius: 8px;
   font-size: 0.85rem;
   font-weight: 500;
-  white-space: nowrap;
+  width: max-content;
+  max-width: min(320px, 85vw);
+  overflow-wrap: anywhere;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   z-index: 1000;
   pointer-events: none; /* שלא יפריע ללחיצות מתחתיו */

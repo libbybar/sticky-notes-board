@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { BaseInput, BaseButton } from './SharedStyles';
+import { BaseInput, BaseButton, touchTarget } from './SharedStyles';
 import { PRIMARY_COLOR, DANGER_COLOR, TEXT_MUTED } from './style-constants';
 
 export const ManagerContainer = styled.div`
@@ -27,7 +27,9 @@ export const Tag = styled.div`
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s;
-  
+  max-width: 100%;
+  min-width: 0;
+
   background-color: ${props => props.$color};
   border: ${props => props.$isSelected ? `2px solid ${PRIMARY_COLOR}` : `1px solid ${props.$borderColor}`};
   transform: ${props => props.$isSelected ? 'scale(1.05)' : 'scale(1)'};
@@ -46,6 +48,15 @@ export const TagName = styled.button`
   color: inherit;
   text-align: inherit;
   cursor: pointer;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -0.4rem -0.5rem;
+  }
 `;
 export const ColorCircle = styled.input`
   width: 16px;
@@ -62,6 +73,15 @@ export const ColorCircle = styled.input`
 
   &::-webkit-color-swatch-wrapper { padding: 0; }
   &::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+  @media (pointer: coarse) {
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 `;
 export const IconContainer = styled.div`
   position: relative;
@@ -85,6 +105,8 @@ export const DeleteIcon = styled.button`
   align-items: center;
   color: ${TEXT_MUTED};
   padding: 0;
+  position: relative;
+  ${touchTarget(9)}
   &:hover { color: ${DANGER_COLOR}; }
 `;
 export const AddForm = styled.form`
@@ -94,6 +116,11 @@ export const AddForm = styled.form`
 `;
 export const TinyInput = styled(BaseInput)`
   flex: 1;
+  min-width: 0;
+
+  @media (max-width: 600px) {
+    font-size: 1rem;
+  }
 `;
 export const ColorInput = styled.input`
   width: 40px;

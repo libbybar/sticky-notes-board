@@ -1,5 +1,15 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { PRIMARY_COLOR, BORDER_LIGHT, TEXT_MAIN } from './style-constants';
+
+export const touchTarget = (extraPx) => css`
+  @media (pointer: coarse) {
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -${extraPx}px;
+    }
+  }
+`;
 
 export const BaseButton = styled.button`
   /* ערכים קבועים לאחידות */
