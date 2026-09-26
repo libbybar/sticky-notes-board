@@ -294,6 +294,10 @@ const confirmCategoryDelete = () => {
         return <Login onLogin={setUserName} />;
     }
 
+    const selectedVisibleIds = visibleTasks
+        .filter(task => selectedIds.includes(task.id))
+        .map(task => task.id);
+
     const requestDelete = (task) => {
         setTaskToDelete(task);
         setIsDeleteModalOpen(true);
@@ -306,7 +310,7 @@ const confirmCategoryDelete = () => {
         }
     };
     const handleBulkDelete = () => {
-        deleteMultipleTasks(selectedIds);
+        deleteMultipleTasks(selectedVisibleIds);
         clearSelection();
         setIsBulkDeleteModalOpen(false);
     };
@@ -316,8 +320,8 @@ const confirmCategoryDelete = () => {
         window.location.reload();
     };
     const updateSelectedTasksCategory = (newCategory) => {
-        if (!newCategory || selectedIds.length === 0) return;
-        updateMultipleTasksCategory(selectedIds, newCategory);
+        if (!newCategory || selectedVisibleIds.length === 0) return;
+        updateMultipleTasksCategory(selectedVisibleIds, newCategory);
         clearSelection();
     };
 
@@ -350,7 +354,7 @@ const confirmCategoryDelete = () => {
             <ConfirmationModal
                 isOpen={isBulkDeleteModalOpen}
                 title={BULK_DELETE_LABEL}
-                message={TODO_APP_BULK_DELETE_MESSAGE(selectedIds.length)}
+                message={TODO_APP_BULK_DELETE_MESSAGE(selectedVisibleIds.length)}
                 onConfirm={handleBulkDelete}
                 onCancel={() => setIsBulkDeleteModalOpen(false)}
             />
@@ -386,11 +390,11 @@ const confirmCategoryDelete = () => {
                     onClick={toggleSelectionMode}>{isSelectionMode ? TODO_APP_SELECTION_MODE_ON_LABEL : TODO_APP_SELECTION_MODE_OFF_LABEL}</FilterButton>
             </ControlBar>
 
-            {selectedIds.length > 0 && (
+            {selectedVisibleIds.length > 0 && (
                 <BulkActionBanner>
-                    <span>{TODO_APP_BULK_BANNER_SELECTED_COUNT(selectedIds.length)}</span>
+                    <span>{TODO_APP_BULK_BANNER_SELECTED_COUNT(selectedVisibleIds.length)}</span>
                     <ActionButton $variant="danger" onClick={() => setIsBulkDeleteModalOpen(true)}>{BULK_DELETE_LABEL}</ActionButton>
-                    <CategorySelect onChange={(e) => updateSelectedTasksCategory(e.target.value)}>
+                    <CategorySelect aria-label={TODO_APP_CHANGE_CATEGORY_OPTION} onChange={(e) => updateSelectedTasksCategory(e.target.value)}>
                         <option value="">{TODO_APP_CHANGE_CATEGORY_OPTION}</option>
                         {categories.map(cat => <option key={cat.name} value={cat.name}>{cat.name}</option>)}
                     </CategorySelect>

@@ -39,6 +39,8 @@ import {
   TASK_INPUT_PLACEHOLDER,
   TASK_INPUT_SUBMIT_BUTTON,
   TODO_APP_BULK_BANNER_SELECTED_COUNT,
+  TODO_APP_BULK_DELETE_MESSAGE,
+  TODO_APP_CHANGE_CATEGORY_OPTION,
   TODO_APP_CLEAR_BOARD_TOOLTIP,
   TODO_APP_CLEAR_FILTERS_LABEL,
   TODO_APP_DELETE_CATEGORY_TITLE,
@@ -753,6 +755,58 @@ describe('category tags as filter buttons', () => {
     expect(tag).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByText('work note')).toBeInTheDocument();
     expect(screen.queryByText('general note')).not.toBeInTheDocument();
+  });
+});
+
+describe('bulk actions with notes hidden by a search', () => {
+  const selectAllThenSearch = (term) => {
+    seedBoard({
+      tasks: [
+        makeTask({ text: 'alpha note' }),
+        makeTask({ text: 'beta note' })
+      ]
+    });
+    render(<App />);
+    userEvent.click(screen.getByRole('button', { name: TODO_APP_SELECTION_MODE_OFF_LABEL }));
+    screen.getAllByRole('button', { name: STICKY_NOTE_SELECT_LABEL }).forEach((button) => userEvent.click(button));
+    searchFor(term);
+  };
+
+  test('the banner counts only the selected notes that are still visible', () => {
+    selectAllThenSearch('alpha');
+
+    expect(screen.getByText(TODO_APP_BULK_BANNER_SELECTED_COUNT(1))).toBeInTheDocument();
+  });
+
+  test('deleting removes only the visible selected notes and keeps the hidden ones', () => {
+    selectAllThenSearch('alpha');
+
+    userEvent.click(screen.getByRole('button', { name: BULK_DELETE_LABEL }));
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByText(TODO_APP_BULK_DELETE_MESSAGE(1))).toBeInTheDocument();
+    userEvent.click(within(dialog).getByRole('button', { name: CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT }));
+    userEvent.clear(getSearchField());
+
+    expect(screen.queryByText('alpha note')).not.toBeInTheDocument();
+    expect(screen.getByText('beta note')).toBeInTheDocument();
+  });
+
+  test('changing the category affects only the visible selected notes', () => {
+    selectAllThenSearch('alpha');
+
+    userEvent.selectOptions(screen.getByRole('combobox', { name: TODO_APP_CHANGE_CATEGORY_OPTION }), WORK_CATEGORY);
+    userEvent.clear(getSearchField());
+    userEvent.click(getCategoryTag(WORK_CATEGORY));
+
+    expect(screen.getByText('alpha note')).toBeInTheDocument();
+    expect(screen.queryByText('beta note')).not.toBeInTheDocument();
+  });
+
+  test('when every selected note is hidden there is no bulk action to run', () => {
+    selectAllThenSearch('zzz');
+
+    expect(screen.queryByRole('button', { name: BULK_DELETE_LABEL })).not.toBeInTheDocument();
+    expect(screen.queryByText(TODO_APP_BULK_BANNER_SELECTED_COUNT(2))).not.toBeInTheDocument();
   });
 });
 
