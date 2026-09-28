@@ -4,7 +4,7 @@ import {
   TEXT_MUTED, SUCCESS_COLOR
 } from './style-constants';
 import { STICKY_NOTE_TITLE_PLACEHOLDER } from '../ui-texts';
-import { touchTarget } from './SharedStyles';
+import { touchTarget, hoverFocusTooltip } from './SharedStyles';
 
 const fadeIn = keyframes`
   from { opacity: 0; }
@@ -89,6 +89,23 @@ export const TopRow = styled.div`
   justify-content: space-between;
   align-items: center;
 `;
+export const TopRowActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+`;
+export const ChecklistToggleButton = styled.button`
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 4px;
+    transition: color 0.2s;
+    position: relative;
+    ${touchTarget(9)}
+    ${hoverFocusTooltip()}
+    &:hover { color: ${PRIMARY_COLOR}; }
+`;
 export const CategoryTag = styled.select`
     font-size: 10px;
     font-weight: 800;
@@ -120,6 +137,7 @@ export const DeleteBtn = styled.button`
     transition: color 0.2s;
     position: relative;
     ${touchTarget(9)}
+    ${hoverFocusTooltip()}
     &:hover { color: ${DANGER_COLOR}; }
 `;
 export const HeaderRow = styled.div`
@@ -141,33 +159,10 @@ export const ImportantCorner = styled.button`
   z-index: 3;
   filter: ${props => props.$isImportant ? 'drop-shadow(-1px 2px 2px rgba(0, 0, 0, 0.3))' : 'none'};
   ${touchTarget(8)}
+  ${hoverFocusTooltip('end')}
 
   &:focus-visible {
     outline-offset: -2px;
-  }
-
-  &::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 6px;
-    white-space: nowrap;
-    background: #334155;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: normal;
-    line-height: 1.4;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.15s;
-  }
-
-  &:hover::after,
-  &:focus-visible::after {
-    opacity: 1;
   }
 
   ${props => !props.$isImportant && css`
@@ -248,6 +243,57 @@ export const TaskText = styled.div`
     text-decoration: ${props => props.$isCompleted ? 'line-through' : 'none'};
     opacity: ${props => props.$isCompleted ? 0.4 : 1};
     transition: all 0.3s ease;
+
+    &:focus {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+`;
+export const ChecklistList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+`;
+export const ChecklistItemRow = styled.li`
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+`;
+export const ChecklistCheckboxWrapper = styled.label`
+  display: inline-flex;
+  align-items: flex-start;
+  flex-shrink: 0;
+  margin-top: 3px;
+  position: relative;
+  cursor: pointer;
+  ${touchTarget(9)}
+`;
+export const ChecklistCheckbox = styled.input`
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+`;
+export const ChecklistItemText = styled.div`
+    flex: 1;
+    min-width: 0;
+    font-family: 'Assistant', sans-serif;
+    font-weight: 300;
+    font-size: 1rem;
+    line-height: 1.4;
+    color: ${TEXT_MAIN};
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    outline: none;
+    text-align: start;
+    direction: rtl;
+    unicode-bidi: plaintext;
+    text-decoration: ${props => props.$isChecked ? 'line-through' : 'none'};
+    opacity: ${props => props.$isChecked ? 0.5 : 1};
+    transition: all 0.2s ease;
 
     &:focus {
       background: rgba(255, 255, 255, 0.2);
@@ -426,6 +472,7 @@ export const CheckButton = styled.button`
     transition: all 0.2s;
     position: relative;
     ${touchTarget(6)}
+    ${hoverFocusTooltip()}
     border: 2px ${props => props.$status === 'in-progress' ? 'dashed' : 'solid'}
            ${props => props.$isCompleted ? SUCCESS_COLOR :
              props.$status === 'in-progress' ? '#3b47cc' : 'rgba(0, 0, 0, 0.1)'};

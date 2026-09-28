@@ -13,6 +13,20 @@ const withGeneralCategory = (categories) =>
         ? categories
         : [createGeneralCategory(), ...categories];
 
+// פתקים ישנים נשמרו בלי שדות הצ'ק ליסט. ברירת המחדל שומרת עליהם ככתובת טקסט רגילה.
+// לפתקי רשימה, task.text נבנה מחדש מהפריטים בכל טעינה: זה מתקן פתקים שנשמרו לפני
+// שהעריכה שמרה על סנכרון (חיפוש וחלונית המחיקה תלויים ב-text גם עבור רשימות).
+const normalizeTask = (task) => {
+    const isChecklist = !!task.isChecklist;
+    const checklistItems = Array.isArray(task.checklistItems) ? task.checklistItems : [];
+    return {
+        ...task,
+        isChecklist,
+        checklistItems,
+        text: isChecklist ? checklistItems.map(item => item.text).join('\n') : task.text
+    };
+};
+
     export const TodoRepository = {
         getAllData() {
         try {
@@ -22,7 +36,7 @@ const withGeneralCategory = (categories) =>
 
             return {
                 userName: savedUser || '',
-                tasks: savedTasks ? JSON.parse(savedTasks) : [],
+                tasks: savedTasks ? JSON.parse(savedTasks).map(normalizeTask) : [],
                 categories: withGeneralCategory(savedCategories ? JSON.parse(savedCategories) : [])
             };
         } catch (e) {

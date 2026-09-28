@@ -261,6 +261,12 @@ const TodoApp = () => {
         changeTaskDeadline,
         moveToCategory,
         toggleImportant,
+        convertToChecklist,
+        convertToText,
+        addChecklistItem,
+        updateChecklistItemText,
+        toggleChecklistItem,
+        deleteChecklistItem,
         toggleTaskStatus,
         confirmDeleteTask,
         deleteMultipleTasks,
@@ -458,6 +464,12 @@ const confirmCategoryDelete = () => {
                         onUpdateDeadline={changeTaskDeadline}
                         onUpdateCategory={moveToCategory}
                         onToggleImportant={toggleImportant}
+                        onConvertToChecklist={convertToChecklist}
+                        onConvertToText={convertToText}
+                        onAddChecklistItem={addChecklistItem}
+                        onUpdateChecklistItemText={updateChecklistItemText}
+                        onToggleChecklistItem={toggleChecklistItem}
+                        onDeleteChecklistItem={deleteChecklistItem}
                     />
                 ))}
             </NotesGrid>

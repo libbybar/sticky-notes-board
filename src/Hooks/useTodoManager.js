@@ -3,6 +3,17 @@ import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
 import { CATEGORY_GENERAL, STATUS_PENDING, FILTER_ALL } from '../constants';
 import { TodoRepository } from '../services/TodoRepository';
 
+let checklistItemCounter = 0;
+// מזהה ייחודי גם כשכמה פריטים נוצרים באותה מילישנייה (למשל בפיצול טקסט קיים להמרה)
+const createChecklistItem = (text = '') => ({
+    id: `${Date.now()}-${checklistItemCounter++}`,
+    text,
+    checked: false
+});
+
+// task.text נשמר מסונכרן לפריטי הרשימה בכל שינוי, כדי שחיפוש, חלונית מחיקה וחזרה לפתק רגיל
+// תמיד יראו את התוכן העדכני ולא טקסט ישן מלפני ההמרה לרשימה.
+const joinChecklistText = (checklistItems) => checklistItems.map(item => item.text).join('\n');
 
 export const useTodoManager = () => {
     const initialData = TodoRepository.getAllData();
@@ -39,6 +50,8 @@ useEffect(() => {
     };
     const addTask = (taskData) => {
         const newTask = {
+            isChecklist: false,
+            checklistItems: [],
             ...taskData,
             id: Date.now(),
             createdAt: new Date().toISOString(),
@@ -56,7 +69,53 @@ useEffect(() => {
 
     const moveToCategory = (id, category) => _updateTask(id, () => ({ category }));
 
-const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImportant })); 
+const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImportant }));
+
+    const convertToChecklist = (id) => _updateTask(id, (task) => {
+        const items = (task.text || '')
+            .split('\n')
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
+            .map(line => createChecklistItem(line));
+        const checklistItems = items.length > 0 ? items : [createChecklistItem('')];
+        return {
+            isChecklist: true,
+            checklistItems,
+            text: joinChecklistText(checklistItems)
+        };
+    });
+
+    const convertToText = (id) => _updateTask(id, () => ({
+        isChecklist: false,
+        checklistItems: []
+    }));
+
+    const addChecklistItem = (id, afterIndex) => _updateTask(id, (task) => {
+        const items = task.checklistItems || [];
+        const newItem = createChecklistItem('');
+        const nextItems = (afterIndex === undefined || afterIndex === null)
+            ? [...items, newItem]
+            : [...items.slice(0, afterIndex + 1), newItem, ...items.slice(afterIndex + 1)];
+        return { checklistItems: nextItems, text: joinChecklistText(nextItems) };
+    });
+
+    const updateChecklistItemText = (id, itemId, text) => _updateTask(id, (task) => {
+        const nextItems = (task.checklistItems || []).map(item =>
+            item.id === itemId ? { ...item, text } : item
+        );
+        return { checklistItems: nextItems, text: joinChecklistText(nextItems) };
+    });
+
+    const toggleChecklistItem = (id, itemId) => _updateTask(id, (task) => ({
+        checklistItems: (task.checklistItems || []).map(item =>
+            item.id === itemId ? { ...item, checked: !item.checked } : item
+        )
+    }));
+
+    const deleteChecklistItem = (id, itemId) => _updateTask(id, (task) => {
+        const nextItems = (task.checklistItems || []).filter(item => item.id !== itemId);
+        return { checklistItems: nextItems, text: joinChecklistText(nextItems) };
+    });
 
     const toggleTaskStatus = (id) => {
         _updateTask(id, (task) => {
@@ -147,6 +206,12 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
         changeTaskDeadline,
         moveToCategory,
         toggleImportant,
+        convertToChecklist,
+        convertToText,
+        addChecklistItem,
+        updateChecklistItemText,
+        toggleChecklistItem,
+        deleteChecklistItem,
         toggleTaskStatus,
         confirmDeleteTask,
         deleteMultipleTasks,

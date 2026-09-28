@@ -11,6 +11,38 @@ export const touchTarget = (extraPx) => css`
   }
 `;
 
+// A custom tooltip driven by the data-tooltip attribute: unlike the native `title`
+// attribute, this shows on keyboard focus too, not only on real mouse hover.
+// Requires `position: relative` on the element itself.
+export const hoverFocusTooltip = (align = 'center') => css`
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    ${align === 'end'
+      ? css`right: 0;`
+      : css`left: 50%; transform: translateX(-50%);`}
+    margin-top: 6px;
+    white-space: nowrap;
+    background: #334155;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1.4;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+  }
+`;
+
 export const BaseButton = styled.button`
   /* ערכים קבועים לאחידות */
   border-radius: 12px;

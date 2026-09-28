@@ -47,6 +47,12 @@ export const STICKY_NOTE_CATEGORY_LABEL = 'תווית הפתק';
 export const STICKY_NOTE_TEXT_LABEL = 'תוכן הפתק';
 export const STICKY_NOTE_SELECT_LABEL = 'בחירת הפתק';
 
+export const STICKY_NOTE_CONVERT_TO_CHECKLIST_LABEL = 'להפוך לרשימה';
+export const STICKY_NOTE_CONVERT_TO_TEXT_LABEL = 'חזרה לפתק רגיל';
+export const STICKY_NOTE_CHECKLIST_ITEM_LABEL = (position, total, text) => `סימון פריט ${position} מתוך ${total}: "${text}" כבוצע`;
+// TODO: ליבי לנסח - כולל מיקום/סה"כ כדי שכל שדה עריכה יקבל שם ייחודי גם ברשימה עם כמה פריטים (טקסט זמני)
+export const STICKY_NOTE_CHECKLIST_ITEM_TEXT_LABEL = (position, total) => `פריט ${position} מתוך ${total} ברשימה`;
+
 // ConfirmationModal.jsx
 export const CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT = 'כן, למחוק';
 
