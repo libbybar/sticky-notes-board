@@ -113,10 +113,13 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
             if (activeStatusFilter === 'important') matchesStatus = task.isImportant;
             if (activeStatusFilter === 'in-progress') matchesStatus = task.status === 'in-progress';
             if (activeStatusFilter === 'overdue') matchesStatus = isTaskOverdue(task);
+            if (activeStatusFilter === 'completed') matchesStatus = task.status === 'completed';
 
             return matchesSearch && matchesCategory && matchesStatus;
         })
         .sort((a, b) => {
+            if (a.completed !== b.completed) return a.completed ? 1 : -1;
+            if (a.completed) return 0;
             if (!a.deadline) return 1;
             if (!b.deadline) return -1;
             return new Date(a.deadline) - new Date(b.deadline);

@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef } from 'react';
 import * as S from '../style/ConfirmationModal.styles';
-import { AlertTriangle, Trash2, X } from 'lucide-react';
+import { WarningIcon, NoteDeleteIcon, XIcon } from '../assets/icons';
 import { CANCEL_LABEL, CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT } from '../ui-texts';
 
 const FOCUSABLE_SELECTOR = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
@@ -70,7 +70,7 @@ const ConfirmationModal = ({
         onClick={e => e.stopPropagation()}
       >
         <S.WarningIcon>
-          <AlertTriangle size={48} />
+          <WarningIcon width={48} height={48} aria-hidden="true" />
         </S.WarningIcon>
 
         <S.Title id={titleId}>{title}</S.Title>
@@ -78,12 +78,12 @@ const ConfirmationModal = ({
 
         <S.ButtonGroup>
           <S.ConfirmButton onClick={onConfirm}>
-            <Trash2 size={18} />
+            <NoteDeleteIcon width={18} height={18} aria-hidden="true" />
             {confirmText}
           </S.ConfirmButton>
 
           <S.CancelButton ref={cancelButtonRef} onClick={onCancel}>
-            <X size={18} />
+            <XIcon width={18} height={18} aria-hidden="true" />
             {CANCEL_LABEL}
           </S.CancelButton>
         </S.ButtonGroup>

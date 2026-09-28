@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as S from '../style/TaskInput.styles';
-import { PlusCircle } from 'lucide-react';
+import { NoteAddIcon as AddIcon } from '../assets/icons';
 import ValidationTooltip from './ValidationTooltip';
 import {
   TASK_INPUT_ERROR_EMPTY,
@@ -82,7 +82,7 @@ if (!text.trim()) {
 
         <S.AddButton type="submit">
           <span>{TASK_INPUT_SUBMIT_BUTTON}</span>
-          <PlusCircle size={20} />
+          <AddIcon width={20} height={20} aria-hidden="true" />
         </S.AddButton>
       </S.StyledForm>
     </S.InputContainer>

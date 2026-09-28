@@ -63,11 +63,12 @@ export const TODO_APP_RESET_MESSAGE = 'זהירות! פעולה זו תמחק א
 export const TODO_APP_RESET_CONFIRM_TEXT = 'כן, למחוק הכל';
 export const TODO_APP_BULK_DELETE_MESSAGE = (count) => `האם למחוק את ${count} הפתקים שנבחרו?`;
 export const TODO_APP_SEARCH_PLACEHOLDER = ' חיפוש פתק - לפי כותרת או תוכן';
-export const TODO_APP_FILTER_IMPORTANT_LABEL = '⭐ דחופות';
-export const TODO_APP_FILTER_IN_PROGRESS_LABEL = '🔵 בביצוע';
-export const TODO_APP_FILTER_OVERDUE_LABEL = '⚠️ באיחור';
-export const TODO_APP_SELECTION_MODE_ON_LABEL = '✅ סיום בחירה';
-export const TODO_APP_SELECTION_MODE_OFF_LABEL = '☑️ בחירה מרובה';
+export const TODO_APP_FILTER_IMPORTANT_LABEL = 'דחופות';
+export const TODO_APP_FILTER_IN_PROGRESS_LABEL = 'בביצוע';
+export const TODO_APP_FILTER_OVERDUE_LABEL = 'באיחור';
+export const TODO_APP_FILTER_COMPLETED_LABEL = 'בוצעו';
+export const TODO_APP_SELECTION_MODE_ON_LABEL = 'סיום בחירה';
+export const TODO_APP_SELECTION_MODE_OFF_LABEL = 'בחירה מרובה';
 export const TODO_APP_BULK_BANNER_SELECTED_COUNT = (count) => `בחרתי ${count} פתקים`;
 export const TODO_APP_CHANGE_CATEGORY_OPTION = 'שינוי תווית';
 export const TODO_APP_EMPTY_BOARD_TITLE = 'הלוח עוד ריק';

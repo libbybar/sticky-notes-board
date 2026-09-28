@@ -13,6 +13,11 @@ export const Card = styled.div`
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
   text-align: center;
 `;
+export const Illustration = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+`;
 export const Title = styled.h3`
   font-family: 'Varela Round', sans-serif;
   font-size: 1.4rem;

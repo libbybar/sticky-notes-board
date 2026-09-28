@@ -28,6 +28,7 @@ AGENTS.md
 
 # local progress tracker — not for publishing
 PROGRESS.md
+PROGRESS-icons.md
 
 # local Claude Code settings (permissions, local paths)
 .claude/

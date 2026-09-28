@@ -10,6 +10,15 @@ import ConfirmationModal from './components/ConfirmationModal';
 import EmptyState from './components/EmptyState';
 import { touchTarget } from './style/SharedStyles';
 import myBackgroundImage from './assets/my-background.jpeg';
+import {
+  NoteUrgentIcon as UrgentIcon,
+  TaskInProgressIcon as InProgressIcon,
+  TaskOverdueIcon as OverdueIcon,
+  TaskCompleteIcon as CompleteIcon,
+  MultiSelectIcon,
+  EmptyBoardIcon,
+  ClearAllIcon
+} from './assets/icons';
 import { useBulkSelection } from './Hooks/useBulkSelection';
 import { CATEGORY_GENERAL, FILTER_ALL } from './constants';
 import {
@@ -26,6 +35,7 @@ import {
   TODO_APP_RESET_CONFIRM_TEXT,
   TODO_APP_BULK_DELETE_MESSAGE,
   TODO_APP_SEARCH_PLACEHOLDER,
+  TODO_APP_FILTER_COMPLETED_LABEL,
   TODO_APP_FILTER_IMPORTANT_LABEL,
   TODO_APP_FILTER_IN_PROGRESS_LABEL,
   TODO_APP_FILTER_OVERDUE_LABEL,
@@ -327,7 +337,9 @@ const confirmCategoryDelete = () => {
 
     return (
         <AppContainer $isSelectionMode={isSelectionMode}>
-            <ClearBoardButton aria-label={TODO_APP_CLEAR_BOARD_TOOLTIP} onClick={() => setIsResetModalOpen(true)}>✕</ClearBoardButton>
+            <ClearBoardButton aria-label={TODO_APP_CLEAR_BOARD_TOOLTIP} onClick={() => setIsResetModalOpen(true)}>
+                <ClearAllIcon width={14} height={14} aria-hidden="true" />
+            </ClearBoardButton>
 
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}
@@ -379,15 +391,29 @@ const confirmCategoryDelete = () => {
                 />
                 <FilterButton $active={activeStatusFilter === 'important'}
                     aria-pressed={activeStatusFilter === 'important'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'important' ? 'all' : 'important')}>{TODO_APP_FILTER_IMPORTANT_LABEL}</FilterButton>
+                    onClick={() => setActiveStatusFilter(prev => prev === 'important' ? 'all' : 'important')}>
+                    <UrgentIcon width={16} height={16} />{TODO_APP_FILTER_IMPORTANT_LABEL}
+                </FilterButton>
                 <FilterButton $active={activeStatusFilter === 'in-progress'}
                     aria-pressed={activeStatusFilter === 'in-progress'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'in-progress' ? 'all' : 'in-progress')}>{TODO_APP_FILTER_IN_PROGRESS_LABEL}</FilterButton>
+                    onClick={() => setActiveStatusFilter(prev => prev === 'in-progress' ? 'all' : 'in-progress')}>
+                    <InProgressIcon width={16} height={16} />{TODO_APP_FILTER_IN_PROGRESS_LABEL}
+                </FilterButton>
                 <FilterButton $active={activeStatusFilter === 'overdue'}
                     aria-pressed={activeStatusFilter === 'overdue'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'overdue' ? 'all' : 'overdue')}>{TODO_APP_FILTER_OVERDUE_LABEL}</FilterButton>
+                    onClick={() => setActiveStatusFilter(prev => prev === 'overdue' ? 'all' : 'overdue')}>
+                    <OverdueIcon width={16} height={16} />{TODO_APP_FILTER_OVERDUE_LABEL}
+                </FilterButton>
+                <FilterButton $active={activeStatusFilter === 'completed'}
+                    aria-pressed={activeStatusFilter === 'completed'}
+                    onClick={() => setActiveStatusFilter(prev => prev === 'completed' ? 'all' : 'completed')}>
+                    <CompleteIcon width={16} height={16} />{TODO_APP_FILTER_COMPLETED_LABEL}
+                </FilterButton>
                 <FilterButton $active={isSelectionMode}
-                    onClick={toggleSelectionMode}>{isSelectionMode ? TODO_APP_SELECTION_MODE_ON_LABEL : TODO_APP_SELECTION_MODE_OFF_LABEL}</FilterButton>
+                    onClick={toggleSelectionMode}>
+                    <MultiSelectIcon width={16} height={16} />
+                    {isSelectionMode ? TODO_APP_SELECTION_MODE_ON_LABEL : TODO_APP_SELECTION_MODE_OFF_LABEL}
+                </FilterButton>
             </ControlBar>
 
             {selectedVisibleIds.length > 0 && (
@@ -411,6 +437,7 @@ const confirmCategoryDelete = () => {
                         onAction={clearFilters}
                     />
                     : <EmptyState
+                        icon={<EmptyBoardIcon width={96} height={72} aria-hidden="true" />}
                         title={TODO_APP_EMPTY_BOARD_TITLE}
                         message={TODO_APP_EMPTY_BOARD_MESSAGE}
                     />

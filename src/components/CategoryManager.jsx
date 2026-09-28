@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as S from '../style/CategoryManager.styles';
-import { Plus, X, Palette } from 'lucide-react';
+import { ColorPaletteIcon, LabelAddIcon, NoteDeleteIcon } from '../assets/icons';
 import ValidationTooltip from './ValidationTooltip';
 import {
   CATEGORY_MANAGER_ERROR_EMPTY,
@@ -68,7 +68,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
               $isDimmed={isDimmed}
             >
               <S.IconContainer>
-                <Palette size={16} color="#64748b" />
+                <ColorPaletteIcon width={16} height={16} color="#64748b" aria-hidden="true" />
                 <S.ColorCircle
                   type="color"
                   aria-label={CATEGORY_MANAGER_COLOR_LABEL(cat.name)}
@@ -85,7 +85,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
                   e.stopPropagation();
                   onDelete(cat.name);
                 }}>
-                  <X size={14} />
+                  <NoteDeleteIcon width={14} height={14} aria-hidden="true" />
                 </S.DeleteIcon>
               )}
             </S.Tag>
@@ -112,7 +112,7 @@ const CategoryManager = ({ categories, onAdd, onDelete, onUpdateColor, selectedF
           onChange={(e) => setNewColor(e.target.value)}
         />
         <S.IconButton type="submit" aria-label={CATEGORY_MANAGER_ADD_LABEL}>
-          <Plus size={20} />
+          <LabelAddIcon width={20} height={20} aria-hidden="true" />
         </S.IconButton>
       </S.AddForm>
     </S.ManagerContainer>

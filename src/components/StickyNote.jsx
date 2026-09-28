@@ -1,6 +1,15 @@
 import React from 'react';
 import * as S from '../style/StickyNote.styles';
-import { Check, Trash2, Pin, Star } from 'lucide-react';
+import {
+  PinRedIcon,
+  PinBlueIcon,
+  NoteDeleteIcon as DeleteIcon,
+  TaskInProgressIcon as InProgressIcon,
+  TaskCompleteIcon as CompleteIcon,
+  TaskIcon,
+  CalendarIcon,
+  CheckIcon
+} from '../assets/icons';
 import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
 import { CATEGORY_GENERAL } from '../constants';
 import {
@@ -66,6 +75,7 @@ const StickyNote = ({
     e.stopPropagation();
     if (typeof onDelete === 'function') onDelete(id);
   };
+  const importantLabel = isImportant ? STICKY_NOTE_UNMARK_IMPORTANT : STICKY_NOTE_MARK_IMPORTANT;
   const deadlineValue = deadline ? new Date(deadline).toISOString().split('T')[0] : '';
   const formattedDeadline = deadline ? new Date(deadline).toLocaleDateString('he-IL') : '';
 
@@ -76,10 +86,23 @@ const StickyNote = ({
       $rotation={rotation}
       $isSelected={isSelected}
       $isSelectionMode={isSelectionMode}
+      $isImportant={!!isImportant}
     >
       <S.PinWrapper $status={task.status} $rotation={task.pinRotation}>
-        <Pin size={24} fill="currentColor" />
+        {task.status === 'in-progress'
+          ? <PinBlueIcon width={30} height={30} aria-hidden="true" />
+          : <PinRedIcon width={30} height={30} aria-hidden="true" />}
       </S.PinWrapper>
+
+      <S.ImportantCorner
+        type="button"
+        $isImportant={!!isImportant}
+        aria-label={importantLabel}
+        data-tooltip={importantLabel}
+        onClick={() => onToggleImportant && onToggleImportant(id)}
+      >
+        <S.CornerShape $isImportant={!!isImportant} $bgColor={bgColor} />
+      </S.ImportantCorner>
 
       <S.NoteHeaderArea>
         <S.TopRow>
@@ -94,7 +117,9 @@ const StickyNote = ({
                   e.stopPropagation();
                   onToggleSelect();
                 }}
-              />
+              >
+                {isSelected && <CheckIcon width={11} height={11} color="white" aria-hidden="true" />}
+              </S.CustomSelectionCircle>
             )}
             <S.CategoryTag
               aria-label={STICKY_NOTE_CATEGORY_LABEL}
@@ -109,18 +134,11 @@ const StickyNote = ({
             </S.CategoryTag>
           </S.HeaderActions>
           <S.DeleteBtn onClick={handleDelete} title={STICKY_NOTE_DELETE_TITLE}>
-            <Trash2 size={14} />
+            <DeleteIcon width={14} height={14} aria-hidden="true" />
           </S.DeleteBtn>
         </S.TopRow>
 
         <S.HeaderRow>
-          <S.StarButton
-            $isImportant={isImportant}
-            onClick={() => onToggleImportant && onToggleImportant(id)}
-            title={isImportant ? STICKY_NOTE_UNMARK_IMPORTANT : STICKY_NOTE_MARK_IMPORTANT}
-          >
-            <Star size={18} fill={isImportant ? "currentColor" : "none"} />
-          </S.StarButton>
           <S.TitleInput
             role="textbox"
             aria-label={STICKY_NOTE_TITLE_PLACEHOLDER}
@@ -154,7 +172,7 @@ const StickyNote = ({
       <S.Footer>
         <S.FooterInfo>
           <S.DeadlineRow>
-            <span style={{ fontSize: '0.63rem' }}>📅</span>
+            <CalendarIcon width={11} height={11} aria-hidden="true" />
             <S.DateText
               type="date"
               aria-label={STICKY_NOTE_DATE_LABEL}
@@ -184,7 +202,11 @@ const StickyNote = ({
                   STICKY_NOTE_CHECK_TITLE_COMPLETED
             }
           >
-            <Check size={18} strokeWidth={3} />
+            {task.status === 'in-progress'
+              ? <InProgressIcon width={18} height={18} aria-hidden="true" />
+              : task.status === 'completed'
+                ? <CompleteIcon width={18} height={18} aria-hidden="true" />
+                : <TaskIcon width={18} height={18} aria-hidden="true" />}
           </S.CheckButton>
         </S.ActionButtons>
       </S.Footer>

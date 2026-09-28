@@ -1,7 +1,7 @@
-import styled, { keyframes } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import {
   DEFAULT_COLOR, PRIMARY_COLOR, DANGER_COLOR, TEXT_MAIN,
-  TEXT_MUTED, WARNING_COLOR, SUCCESS_COLOR
+  TEXT_MUTED, SUCCESS_COLOR
 } from './style-constants';
 import { STICKY_NOTE_TITLE_PLACEHOLDER } from '../ui-texts';
 import { touchTarget } from './SharedStyles';
@@ -10,6 +10,29 @@ const fadeIn = keyframes`
   from { opacity: 0; }
   to { opacity: 1; }
 `;
+
+const pinDrop = (rotation) => keyframes`
+  0% { transform: translateX(-50%) translateY(-14px) rotate(${rotation}deg) scale(0.5); opacity: 0; }
+  55% { transform: translateX(-50%) translateY(2px) rotate(${rotation}deg) scale(1.12); opacity: 1; }
+  75% { transform: translateX(-50%) translateY(-1px) rotate(${rotation}deg) scale(0.97); }
+  100% { transform: translateX(-50%) translateY(0) rotate(${rotation}deg) scale(1); }
+`;
+
+const FOLD_SIZE = 28;
+const NOTE_TOP_BORDER = 8;
+
+// The polygon reaches past the note on every side so the shadow and the pin are kept;
+// only the top-right corner triangle is cut away.
+const foldedCornerCut = `polygon(
+  -100px -100px,
+  calc(100% - ${FOLD_SIZE}px) -100px,
+  calc(100% - ${FOLD_SIZE}px) 0,
+  100% ${FOLD_SIZE}px,
+  calc(100% + 100px) ${FOLD_SIZE}px,
+  calc(100% + 100px) calc(100% + 100px),
+  -100px calc(100% + 100px)
+)`;
+
 export const NoteContainer = styled.div`
     padding: 1.2rem;
     height: 18rem;
@@ -52,6 +75,7 @@ export const NoteContainer = styled.div`
 
     opacity: ${props => props.$isSelectionMode && !props.$isSelected ? 0.6 : 1};
     filter: ${props => props.$isSelectionMode && !props.$isSelected ? 'grayscale(30%)' : 'none'};
+    clip-path: ${props => props.$isImportant ? foldedCornerCut : 'none'};
 `;
 export const NoteHeaderArea = styled.div`
   display: flex;
@@ -104,20 +128,66 @@ export const HeaderRow = styled.div`
   gap: 8px;
   margin-top: 2px;
 `;
-export const StarButton = styled.button`
-  background: none;
-  border: none;
-  cursor: pointer;
+export const ImportantCorner = styled.button`
+  position: absolute;
+  top: -${NOTE_TOP_BORDER}px;
+  right: 0;
+  width: ${FOLD_SIZE}px;
+  height: ${FOLD_SIZE}px;
   padding: 0;
-  display: flex;
-  align-items: center;
-  color: ${props => props.$isImportant ? WARNING_COLOR : '#e2e8f0'};
-  transition: all 0.2s;
+  border: none;
+  background: none;
+  cursor: pointer;
+  z-index: 3;
+  filter: ${props => props.$isImportant ? 'drop-shadow(-1px 2px 2px rgba(0, 0, 0, 0.3))' : 'none'};
+  ${touchTarget(8)}
 
-  &:hover {
-    transform: scale(1.2);
-    color: ${WARNING_COLOR};
+  &:focus-visible {
+    outline-offset: -2px;
   }
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 6px;
+    white-space: nowrap;
+    background: #334155;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: normal;
+    line-height: 1.4;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+  }
+
+  ${props => !props.$isImportant && css`
+    &:hover > span,
+    &:focus-visible > span {
+      background: rgba(0, 0, 0, 0.18);
+    }
+  `}
+`;
+export const CornerShape = styled.span`
+  position: absolute;
+  inset: 0;
+  display: block;
+  transition: clip-path 0.25s ease, background 0.25s ease;
+  clip-path: ${props => props.$isImportant
+    ? 'polygon(0 0, 100% 100%, 0 100%)'
+    : 'polygon(0 0, 100% 0, 100% 100%)'};
+  background: ${props => props.$isImportant
+    ? `linear-gradient(to bottom left, rgba(255, 255, 255, 0.65), rgba(0, 0, 0, 0.12)), ${props.$bgColor}`
+    : 'rgba(0, 0, 0, 0.07)'};
 `;
 export const TitleInput = styled.div`
   font-weight: bold;
@@ -186,31 +256,37 @@ export const TaskText = styled.div`
 `;
 export const PinWrapper = styled.div`
     position: absolute;
-    top: -18px;
+    top: -25px;
     z-index: 20;
     left: 50%;
 
-color: ${props => props.$status === 'in-progress' ? '#3b47cc' : '#ef0000'};    opacity: 1;
+    opacity: 1;
     pointer-events: none;
-    filter: drop-shadow(2px 4px 3px rgba(0, 0, 0, 0.6));
+    filter:
+      drop-shadow(1px 1.5px 1px rgba(0, 0, 0, 0.55))
+      drop-shadow(3px 5px 4px rgba(0, 0, 0, 0.35));
     display: flex;
     align-items: center;
     justify-content: center;
-    transform: translateX(-50%) rotate(${props => props.$rotation || 0}deg);
-    transition: transform 0.4s ease;
- 
+    animation: ${props => pinDrop(props.$rotation || 0)} 0.55s cubic-bezier(0.3, 1.4, 0.5, 1) 0.15s both;
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+      transform: translateX(-50%) rotate(${props => props.$rotation || 0}deg);
+    }
+
 
     &::before {
       content: '';
       position: absolute;
-      bottom: -2px;
+      top: 28px;
       left: 50%;
       transform: translateX(-50%);
-      width: 5px;
-      height: 3px;
+      width: 6px;
+      height: 4px;
       background: rgba(0, 0, 0, 0.4);
-      border-radius: 50%; 
-      filter: blur(1px); 
+      border-radius: 50%;
+      filter: blur(1px);
       z-index: -1;
     }
 
@@ -232,7 +308,7 @@ color: ${props => props.$status === 'in-progress' ? '#3b47cc' : '#ef0000'};    o
       background-size: 8px 8px, 15px 15px;
       
       /* מיקום מדויק לכל ברק (ציר X ציר Y) */
-      background-position: 35% 15%, 20% 85%;
+      background-position: 35% 15%, 20% 75%;
       
       border-radius: 50%; 
       filter: blur(1px); 
@@ -267,13 +343,6 @@ export const CustomSelectionCircle = styled.button`
   margin-left: 8px;
   position: relative;
   ${touchTarget(8)}
-
-  &::after {
-    content: '✓';
-    color: white;
-    font-size: 11px;
-    display: ${props => props.$isSelected ? 'block' : 'none'};
-  }
 `;
 export const HeaderActions = styled.div`
   display: flex;

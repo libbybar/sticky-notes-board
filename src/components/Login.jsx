@@ -1,6 +1,6 @@
 import React, { useId, useRef, useState } from 'react';
 import * as S from '../style/Login.styles';
-import { UserCircle2, ArrowLeftCircle } from 'lucide-react';
+import { PersonIcon, ArrowLeftIcon } from '../assets/icons';
 import {
   LOGIN_TITLE,
   LOGIN_INTRO,
@@ -41,7 +41,7 @@ const Login = ({ onLogin }) => {
     <S.LoginOverlay>
       <S.LoginCard>
         <S.IconWrapper>
-          <UserCircle2 size={64} strokeWidth={1.5} />
+          <PersonIcon width={64} height={64} strokeWidth={1.5} aria-hidden="true" />
         </S.IconWrapper>
 
         <S.Title>{LOGIN_TITLE}</S.Title>
@@ -63,7 +63,7 @@ const Login = ({ onLogin }) => {
           {error && <S.ErrorText id={errorId} role="alert">{error}</S.ErrorText>}
           <S.SubmitButton type="submit">
             {LOGIN_SUBMIT_BUTTON}
-            <ArrowLeftCircle size={20} />
+            <ArrowLeftIcon width={20} height={20} aria-hidden="true" />
           </S.SubmitButton>
         </S.StyledForm>
 

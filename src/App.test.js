@@ -30,9 +30,11 @@ import {
   STICKY_NOTE_CHECK_TITLE_PENDING,
   STICKY_NOTE_DATE_LABEL,
   STICKY_NOTE_DELETE_TITLE,
+  STICKY_NOTE_MARK_IMPORTANT,
   STICKY_NOTE_SELECT_LABEL,
   STICKY_NOTE_TEXT_LABEL,
   STICKY_NOTE_TITLE_PLACEHOLDER,
+  STICKY_NOTE_UNMARK_IMPORTANT,
   TASK_INPUT_CATEGORY_LABEL,
   TASK_INPUT_DATE_LABEL,
   TASK_INPUT_ERROR_EMPTY,
@@ -47,6 +49,7 @@ import {
   TODO_APP_DELETE_TASK_TITLE,
   TODO_APP_EMPTY_BOARD_MESSAGE,
   TODO_APP_EMPTY_BOARD_TITLE,
+  TODO_APP_FILTER_COMPLETED_LABEL,
   TODO_APP_FILTER_IMPORTANT_LABEL,
   TODO_APP_FILTER_IN_PROGRESS_LABEL,
   TODO_APP_FILTER_OVERDUE_LABEL,
@@ -269,6 +272,21 @@ describe('filtering', () => {
     expect(screen.queryByText('waiting note')).not.toBeInTheDocument();
   });
 
+  test('the completed filter shows only finished notes', () => {
+    seedBoard({
+      tasks: [
+        makeTask({ text: 'finished note', status: 'completed', completed: true }),
+        makeTask({ text: 'unfinished note' })
+      ]
+    });
+    render(<App />);
+
+    clickFilter(TODO_APP_FILTER_COMPLETED_LABEL);
+
+    expect(screen.getByText('finished note')).toBeInTheDocument();
+    expect(screen.queryByText('unfinished note')).not.toBeInTheDocument();
+  });
+
   test('the overdue filter shows only unfinished notes whose deadline has passed', () => {
     seedBoard({
       tasks: [
@@ -286,6 +304,23 @@ describe('filtering', () => {
     expect(screen.queryByText('finished late note')).not.toBeInTheDocument();
     expect(screen.queryByText('future note')).not.toBeInTheDocument();
     expect(screen.queryByText('undated note')).not.toBeInTheDocument();
+  });
+});
+
+describe('note display order', () => {
+  test('completed notes are always shown last, regardless of their own deadline', () => {
+    seedBoard({
+      tasks: [
+        makeTask({ text: 'done soonest', status: 'completed', completed: true, deadline: PAST_DEADLINE }),
+        makeTask({ text: 'future note', deadline: FUTURE_DEADLINE }),
+        makeTask({ text: 'no deadline note' })
+      ]
+    });
+    render(<App />);
+
+    const noteTexts = screen.getAllByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL }).map((el) => el.textContent);
+
+    expect(noteTexts).toEqual(['future note', 'no deadline note', 'done soonest']);
   });
 });
 
@@ -483,7 +518,8 @@ describe('control states and messages are announced', () => {
   test.each([
     ['important', TODO_APP_FILTER_IMPORTANT_LABEL],
     ['in-progress', TODO_APP_FILTER_IN_PROGRESS_LABEL],
-    ['overdue', TODO_APP_FILTER_OVERDUE_LABEL]
+    ['overdue', TODO_APP_FILTER_OVERDUE_LABEL],
+    ['completed', TODO_APP_FILTER_COMPLETED_LABEL]
   ])('the %s filter announces whether it is on', (_, label) => {
     seedBoard({ tasks: [makeTask({ text: 'a note' })] });
     render(<App />);
@@ -807,6 +843,62 @@ describe('bulk actions with notes hidden by a search', () => {
 
     expect(screen.queryByRole('button', { name: BULK_DELETE_LABEL })).not.toBeInTheDocument();
     expect(screen.queryByText(TODO_APP_BULK_BANNER_SELECTED_COUNT(2))).not.toBeInTheDocument();
+  });
+});
+
+describe('marking a note as important with its folded corner', () => {
+  const seedPlainNote = () => seedBoard({ tasks: [makeTask({ text: 'milk' })] });
+
+  test('the corner marks the note as important and unmarks it again', () => {
+    seedPlainNote();
+    render(<App />);
+
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_MARK_IMPORTANT }));
+    expect(screen.queryByRole('button', { name: STICKY_NOTE_MARK_IMPORTANT })).not.toBeInTheDocument();
+
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_UNMARK_IMPORTANT }));
+    expect(screen.getByRole('button', { name: STICKY_NOTE_MARK_IMPORTANT })).toBeInTheDocument();
+  });
+
+  test('a note shows up under the important filter only after it is marked', () => {
+    seedPlainNote();
+    render(<App />);
+
+    clickFilter(TODO_APP_FILTER_IMPORTANT_LABEL);
+    expect(screen.queryByText('milk')).not.toBeInTheDocument();
+    clickFilter(TODO_APP_FILTER_IMPORTANT_LABEL);
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_MARK_IMPORTANT }));
+    clickFilter(TODO_APP_FILTER_IMPORTANT_LABEL);
+
+    expect(screen.getByText('milk')).toBeInTheDocument();
+  });
+
+  test('the important mark is kept after a reload', () => {
+    seedPlainNote();
+    const { unmount } = render(<App />);
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_MARK_IMPORTANT }));
+
+    unmount();
+    render(<App />);
+
+    expect(screen.getByRole('button', { name: STICKY_NOTE_UNMARK_IMPORTANT })).toBeInTheDocument();
+  });
+
+  test('the corner works with the keyboard', () => {
+    seedPlainNote();
+    render(<App />);
+
+    screen.getByRole('button', { name: STICKY_NOTE_MARK_IMPORTANT }).focus();
+    userEvent.keyboard('[Enter]');
+
+    expect(screen.getByRole('button', { name: STICKY_NOTE_UNMARK_IMPORTANT })).toBeInTheDocument();
+  });
+
+  test('the important control is no longer drawn as a star', () => {
+    seedPlainNote();
+    const { container } = render(<App />);
+
+    expect(container.querySelector('.lucide-star')).toBeNull();
   });
 });
 
