@@ -127,6 +127,41 @@ export const setCaretOffset = (el, offset) => {
     }
 };
 
+// Moving the caret via the Selection API (as setCaretOffset does) is a silent, programmatic
+// change - unlike a real keypress, the browser doesn't scroll anything to keep it visible.
+// So after inserting a line break this way, fast-growing content (e.g. many short lines) can
+// push the caret below the field's scrollable area while typing continues unseen. This finds
+// the nearest scrolling ancestor and nudges its scrollTop so the caret rect stays inside it.
+const scrollCaretIntoView = (el) => {
+    try {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+        const range = selection.getRangeAt(0).cloneRange();
+        range.collapse(true);
+        const caretRect = range.getClientRects()[0];
+        if (!caretRect) return;
+
+        let container = el.parentElement;
+        while (container && container !== document.body) {
+            const style = window.getComputedStyle(container);
+            if (/(auto|scroll)/.test(style.overflowY) && container.scrollHeight > container.clientHeight) {
+                break;
+            }
+            container = container.parentElement;
+        }
+        if (!container || container === document.body) return;
+
+        const containerRect = container.getBoundingClientRect();
+        if (caretRect.bottom > containerRect.bottom) {
+            container.scrollTop += caretRect.bottom - containerRect.bottom;
+        } else if (caretRect.top < containerRect.top) {
+            container.scrollTop -= containerRect.top - caretRect.top;
+        }
+    } catch (e) {
+        // best effort only
+    }
+};
+
 // Inserts str at the caret as plain text (replacing el.textContent, same as wrapSelectionWith
 // below) rather than letting the browser handle the key itself - contentEditable's own
 // handling of Enter inserts a <br>/<div>, which textContent silently drops on save, so a line
@@ -139,6 +174,7 @@ export const insertTextAtCaret = (el, str) => {
         const fullText = el.textContent;
         el.textContent = fullText.slice(0, offset) + str + fullText.slice(offset);
         setCaretOffset(el, offset + str.length);
+        scrollCaretIntoView(el);
     } catch (e) {
         // best effort only
     }

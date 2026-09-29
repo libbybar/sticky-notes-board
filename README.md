@@ -2,13 +2,9 @@
 
 A personal sticky notes board in Hebrew for organizing everyday tasks in a simple, visual way.
 
-<!-- Replace with your Vercel URL after deployment -->
+[Live Demo](https://sticky-notes-board-omega.vercel.app/)
 
-[Live Demo](https://your-project-name.vercel.app/)
-
-<!-- Add screenshots or a GIF here after deployment -->
-
-<!-- ![Sticky Notes Board screenshot](./docs/screenshot.png) -->
+![Sticky Notes Board demo](./docs/demo.gif)
 
 ## Features
 
