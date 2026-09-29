@@ -56,7 +56,7 @@ The code is split into components for note creation, filters, bulk actions, note
 Make sure you have a recent version of Node.js installed.
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/libbybar/sticky-notes-board.git
 cd sticky-notes-board
 npm install
 npm start
