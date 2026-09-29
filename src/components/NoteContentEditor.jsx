@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import * as S from '../style/StickyNote.styles';
-import { renderFormattedText, useFormattedField, handleFormatShortcut } from '../utils/richText';
+import { renderFormattedText, useFormattedField, handleFormatShortcut, insertTextAtCaret } from '../utils/richText';
 import FormattingToolbar from './FormattingToolbar';
 import ChecklistItemField from './ChecklistItemField';
 import { STICKY_NOTE_TEXT_LABEL } from '../ui-texts';
@@ -155,8 +155,14 @@ const NoteContentEditor = ({
             }}
             onKeyDown={(e) => {
               if (handleFormatShortcut(e, taskTextFormatting)) return;
-              if (e.key === 'Enter' && !e.shiftKey) {
+              // Enter always breaks the line - a touch keyboard has no Shift+Enter combo,
+              // so that used to be the only way to add a line without leaving edit mode.
+              if (e.key === 'Enter') {
                 e.preventDefault();
+                insertTextAtCaret(e.target, '\n');
+                return;
+              }
+              if (e.key === 'Escape') {
                 e.target.blur();
               }
             }}

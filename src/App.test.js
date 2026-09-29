@@ -999,18 +999,19 @@ describe('note fields are exposed by name', () => {
     expect(screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL })).toHaveAttribute('aria-readonly', 'false');
   });
 
-  test('Enter in the note text finishes editing instead of adding a line, and Shift+Enter leaves the line break to the browser', () => {
+  test('Enter in the note text adds a line break at the caret and stays in edit mode, and Escape exits', () => {
     seedOneNote();
     render(<App />);
     const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
 
     focusElement(textField);
+    selectTextRange(textField, 4, 4); // caret right after "milk"
     userEvent.keyboard('[Enter]');
-    expect(textField).not.toHaveFocus();
-
-    focusElement(textField);
-    userEvent.keyboard('{Shift>}[Enter]{/Shift}');
     expect(textField).toHaveFocus();
+    expect(textField.textContent).toBe('milk\n and eggs');
+
+    userEvent.keyboard('[Escape]');
+    expect(textField).not.toHaveFocus();
   });
 
   test('Enter in the title finishes editing, and Shift+Enter is ignored instead of adding a line or exiting', () => {

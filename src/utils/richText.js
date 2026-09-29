@@ -127,6 +127,23 @@ export const setCaretOffset = (el, offset) => {
     }
 };
 
+// Inserts str at the caret as plain text (replacing el.textContent, same as wrapSelectionWith
+// below) rather than letting the browser handle the key itself - contentEditable's own
+// handling of Enter inserts a <br>/<div>, which textContent silently drops on save, so a line
+// break typed that way would disappear the moment the field blurs. A literal "\n" text-node
+// character survives that round trip, matching the white-space: pre-wrap CSS these fields use.
+export const insertTextAtCaret = (el, str) => {
+    try {
+        const offset = getCaretOffset(el);
+        if (offset === null) return;
+        const fullText = el.textContent;
+        el.textContent = fullText.slice(0, offset) + str + fullText.slice(offset);
+        setCaretOffset(el, offset + str.length);
+    } catch (e) {
+        // best effort only
+    }
+};
+
 // Selects the plain-character range [start, end) within el.
 const setSelectionOffsets = (el, start, end) => {
     try {
