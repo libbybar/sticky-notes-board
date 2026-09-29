@@ -15,10 +15,13 @@ export const LOGIN_NAME_ERROR = 'נדרש שם של שני תווים לפחות
 export const LOGIN_STORAGE_NOTICE = 'השם והפתקים נשמרים בדפדפן הזה בלבד, בלי סנכרון בין מכשירים.';
 export const LOGIN_SUBMIT_BUTTON = 'ללוח שלי';
 
-// TaskInput.jsx
+// CreateNote.jsx
+export const CREATE_NOTE_HEADING = 'הוספת פתק חדש';
+export const CREATE_NOTE_TITLE_LABEL = 'כותרת הפתק החדש';
+export const CREATE_NOTE_CONTENT_PLACEHOLDER = 'תוכן פתק חדש';
+export const CREATE_NOTE_CONTENT_LABEL = 'תוכן הפתק החדש';
 export const TASK_INPUT_ERROR_EMPTY = 'נדרש טקסט כדי להדביק פתק';
-export const TASK_INPUT_PLACEHOLDER = 'מה נדביק על הלוח?';
-export const TASK_INPUT_SUBMIT_BUTTON = 'להדביק';
+export const TASK_INPUT_SUBMIT_BUTTON = 'להדביק ללוח';
 export const TASK_INPUT_DATE_LABEL = 'תאריך יעד לפתק החדש';
 export const TASK_INPUT_CATEGORY_LABEL = 'תווית לפתק החדש';
 

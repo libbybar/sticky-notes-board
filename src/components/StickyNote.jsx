@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import * as S from '../style/StickyNote.styles';
 import { renderFormattedText, useFormattedField, handleFormatShortcut } from '../utils/richText';
+import { formatDeadline } from '../utils/dateFormat';
 import FormattingToolbar from './FormattingToolbar';
 import NoteContentEditor from './NoteContentEditor';
 import {
@@ -96,7 +97,7 @@ const StickyNote = ({
     task.status === STATUS_IN_PROGRESS ? STICKY_NOTE_CHECK_TITLE_IN_PROGRESS :
       STICKY_NOTE_CHECK_TITLE_COMPLETED;
   const deadlineValue = deadline ? new Date(deadline).toISOString().split('T')[0] : '';
-  const formattedDeadline = deadline ? new Date(deadline).toLocaleDateString('he-IL') : '';
+  const formattedDeadline = deadline ? formatDeadline(deadline) : '';
 
   return (
     <S.NoteContainer

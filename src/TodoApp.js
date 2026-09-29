@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTodoManager } from './Hooks/useTodoManager';
 import * as S from './style/TodoApp.styles';
 import Header from './components/Header';
-import TaskInput from './components/TaskInput';
+import CreateNote from './components/CreateNote';
 import TaskFilters from './components/TaskFilters';
 import BulkActionsBar from './components/BulkActionsBar';
 import StickyNote from './components/StickyNote';
@@ -172,6 +172,7 @@ const confirmCategoryDelete = () => {
             />
 
             <Header userName={userName} />
+            <CreateNote onAdd={addTask} categories={categories} />
             <CategoryManager
                 categories={categories}
                 onAdd={(name, color) => setCategories([...categories, { name, color, borderColor: color }])}
@@ -180,7 +181,6 @@ const confirmCategoryDelete = () => {
                 selectedFilter={selectedFilter}
                 onFilter={(cat) => setSelectedFilter(prev => prev === cat ? FILTER_ALL : cat)}
             />
-            <TaskInput onAdd={addTask} categories={categories} />
 
             <TaskFilters
                 searchTerm={searchTerm}

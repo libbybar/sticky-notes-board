@@ -12,6 +12,9 @@ import {
   BULK_DELETE_LABEL,
   CANCEL_LABEL,
   CATEGORY_MANAGER_ADD_LABEL,
+  CREATE_NOTE_HEADING,
+  CREATE_NOTE_TITLE_LABEL,
+  CREATE_NOTE_CONTENT_LABEL,
   CATEGORY_MANAGER_COLOR_LABEL,
   CATEGORY_MANAGER_DELETE_LABEL,
   CATEGORY_MANAGER_ERROR_DUPLICATE,
@@ -44,7 +47,6 @@ import {
   TASK_INPUT_CATEGORY_LABEL,
   TASK_INPUT_DATE_LABEL,
   TASK_INPUT_ERROR_EMPTY,
-  TASK_INPUT_PLACEHOLDER,
   TASK_INPUT_SUBMIT_BUTTON,
   TODO_APP_BULK_BANNER_SELECTED_COUNT,
   TODO_APP_BULK_DELETE_MESSAGE,
@@ -98,8 +100,10 @@ const deleteCategory = (name) => {
   userEvent.click(screen.getByRole('button', { name: CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT }));
 };
 
+const getCreateNoteContentField = () => screen.getByRole('textbox', { name: CREATE_NOTE_CONTENT_LABEL });
+
 const addNote = (text) => {
-  userEvent.type(screen.getByRole('textbox', { name: TASK_INPUT_PLACEHOLDER }), text);
+  userEvent.type(getCreateNoteContentField(), text);
   userEvent.click(screen.getByRole('button', { name: TASK_INPUT_SUBMIT_BUTTON }));
 };
 
@@ -157,7 +161,7 @@ describe('adding a note', () => {
     addNote('buy milk');
 
     expect(screen.getByText('buy milk')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: TASK_INPUT_PLACEHOLDER })).toHaveValue('');
+    expect(getCreateNoteContentField()).toHaveValue('');
   });
 
   test('rejects text made only of spaces and explains why', () => {
@@ -191,6 +195,58 @@ describe('adding a note', () => {
     addNote('pay rent');
 
     expect(screen.getByDisplayValue('2030-01-15')).toBeInTheDocument();
+  });
+
+  // "2030-01-15" has no time of day, so it must never be run through a UTC parse -
+  // that shifts the displayed day back by one in any timezone behind UTC.
+  test('shows the deadline\'s own day regardless of the browser timezone', () => {
+    const originalTZ = process.env.TZ;
+    process.env.TZ = 'Pacific/Midway'; // UTC-11
+    try {
+      seedBoard();
+      render(<App />);
+
+      fireEvent.change(screen.getByLabelText(TASK_INPUT_DATE_LABEL), { target: { value: '2030-01-15' } });
+      addNote('pay rent');
+
+      expect(screen.getByText('15.1.2030')).toBeInTheDocument();
+    } finally {
+      process.env.TZ = originalTZ;
+    }
+  });
+});
+
+describe('the create-note card', () => {
+  test('shows its heading and exposes the title and content fields by name', () => {
+    seedBoard();
+    render(<App />);
+
+    expect(screen.getByText(CREATE_NOTE_HEADING)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: CREATE_NOTE_TITLE_LABEL })).toBeInTheDocument();
+    expect(getCreateNoteContentField()).toBeInTheDocument();
+  });
+
+  test('Enter in the content field adds a line break instead of submitting the note', () => {
+    seedBoard();
+    render(<App />);
+
+    userEvent.type(getCreateNoteContentField(), 'milk{enter}eggs');
+
+    expect(getCreateNoteContentField()).toHaveValue('milk\neggs');
+    expect(screen.getByText(TODO_APP_EMPTY_BOARD_TITLE)).toBeInTheDocument();
+  });
+
+  test('clicking the submit button adds the note and resets the card for the next one', () => {
+    seedBoard();
+    render(<App />);
+
+    userEvent.type(screen.getByRole('textbox', { name: CREATE_NOTE_TITLE_LABEL }), 'groceries');
+    addNote('buy milk');
+
+    expect(screen.getByText('groceries')).toBeInTheDocument();
+    expect(screen.getByText('buy milk')).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: CREATE_NOTE_TITLE_LABEL })).toHaveValue('');
+    expect(getCreateNoteContentField()).toHaveValue('');
   });
 });
 
@@ -457,7 +513,7 @@ describe('the welcome screen', () => {
     submitName();
 
     expect(screen.getByRole('alert')).toHaveTextContent(LOGIN_NAME_ERROR);
-    expect(screen.queryByRole('textbox', { name: TASK_INPUT_PLACEHOLDER })).not.toBeInTheDocument();
+    expect(screen.queryByRole('textbox', { name: CREATE_NOTE_CONTENT_LABEL })).not.toBeInTheDocument();
   });
 
   test('after a rejected name the field is marked invalid, described by the error, and focused', () => {
@@ -505,7 +561,7 @@ describe('the welcome screen', () => {
 
     enterName('  ליבי  ');
 
-    expect(screen.getByRole('textbox', { name: TASK_INPUT_PLACEHOLDER })).toBeInTheDocument();
+    expect(getCreateNoteContentField()).toBeInTheDocument();
     expect(screen.getByText('ליבי')).toBeInTheDocument();
     expect(localStorage.getItem(STORAGE_KEY_USER)).toBe('ליבי');
   });
