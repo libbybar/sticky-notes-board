@@ -1,70 +1,76 @@
-# Getting Started with Create React App
+# לוח שעם | Sticky Notes Board
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A personal sticky notes board in Hebrew for organizing everyday tasks in a simple, visual way.
 
-## Available Scripts
+<!-- Replace with your Vercel URL after deployment -->
 
-In the project directory, you can run:
+[Live Demo](https://your-project-name.vercel.app/)
 
-### `npm start`
+<!-- Add screenshots or a GIF here after deployment -->
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+<!-- ![Sticky Notes Board screenshot](./docs/screenshot.png) -->
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Features
 
-### `npm test`
+- Personal welcome screen with a required name
+- Create and edit notes directly on the board
+- Add titles, content, categories, and due dates
+- Turn notes into checklists
+- Add bold and italic formatting to note titles, text, and checklist items
+- Mark notes as important
+- Move tasks through pending, in progress, and completed states
+- Search notes by title or content
+- Filter by category, importance, status, and overdue date
+- Create, recolor, and delete categories
+- Select multiple notes to delete or move them to another category
+- Empty states for a new board and searches with no results
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Accessibility and UX
 
-### `npm run build`
+The app is built for Hebrew and right-to-left layouts and works on both desktop and mobile screens.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+It includes:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- Keyboard support for key actions
+- Accessible names for controls and form fields
+- Validation errors announced to assistive technology
+- Confirmation dialogs with focus management, Escape support, and focus restoration
+- Filter controls that announce whether they are active
+- Visible keyboard focus states
+- Reduced-motion support
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Tech Stack
 
-### `npm run eject`
+- React
+- styled-components
+- localStorage
+- React Testing Library
+- Create React App
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## How It Works
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+This is a frontend-only project. Notes, categories, and the user's name are stored in the browser using `localStorage`, so there is no backend or database.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+The data stays in the browser and origin where it was created. Clearing the site's data will also clear the board, and there is currently no sync between browsers or devices.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+The code is split into components for note creation, filters, bulk actions, notes, content editing, and confirmation dialogs. Task state is managed with `useTodoManager`, and `TodoRepository` handles reading from and writing to `localStorage`.
 
-## Learn More
+## Run Locally
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Make sure you have a recent version of Node.js installed.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```bash
+git clone <repository-url>
+cd sticky-notes-board
+npm install
+npm start
+```
 
-### Code Splitting
+The app will run at [http://localhost:3000](http://localhost:3000).
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Tests and Production Build
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```bash
+npm test
+npm run build
+```
