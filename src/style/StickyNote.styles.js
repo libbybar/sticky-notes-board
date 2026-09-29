@@ -262,6 +262,35 @@ export const ChecklistItemRow = styled.li`
   align-items: flex-start;
   gap: 6px;
 `;
+export const FormatToolbar = styled.div`
+  position: fixed;
+  display: flex;
+  gap: 2px;
+  background: #334155;
+  border-radius: 8px;
+  padding: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+`;
+export const FormatToolbarButton = styled.button`
+  background: none;
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: Georgia, serif;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  ${touchTarget(6)}
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+`;
 export const ChecklistCheckboxWrapper = styled.label`
   display: inline-flex;
   align-items: flex-start;

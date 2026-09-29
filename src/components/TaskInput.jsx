@@ -30,12 +30,9 @@ if (!text.trim()) {
     }    const randomPinRotation = Math.floor(Math.random() * 61) - 30;
 
     onAdd({
-      id: Date.now(),
       text: text,
       category: selectedCategory,
       deadline: deadline,
-      completed: false,
-      rotation: Math.floor(Math.random() * 10) - 5,
       pinRotation: randomPinRotation
     });
 

@@ -50,8 +50,10 @@ export const STICKY_NOTE_SELECT_LABEL = 'בחירת הפתק';
 export const STICKY_NOTE_CONVERT_TO_CHECKLIST_LABEL = 'להפוך לרשימה';
 export const STICKY_NOTE_CONVERT_TO_TEXT_LABEL = 'חזרה לפתק רגיל';
 export const STICKY_NOTE_CHECKLIST_ITEM_LABEL = (position, total, text) => `סימון פריט ${position} מתוך ${total}: "${text}" כבוצע`;
-// TODO: ליבי לנסח - כולל מיקום/סה"כ כדי שכל שדה עריכה יקבל שם ייחודי גם ברשימה עם כמה פריטים (טקסט זמני)
 export const STICKY_NOTE_CHECKLIST_ITEM_TEXT_LABEL = (position, total) => `פריט ${position} מתוך ${total} ברשימה`;
+
+export const STICKY_NOTE_BOLD_LABEL = 'הדגשת הטקסט שנבחר';
+export const STICKY_NOTE_ITALIC_LABEL = 'הטיית הטקסט שנבחר';
 
 // ConfirmationModal.jsx
 export const CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT = 'כן, למחוק';
@@ -59,7 +61,7 @@ export const CONFIRMATION_MODAL_DEFAULT_CONFIRM_TEXT = 'כן, למחוק';
 // TodoApp.js
 export const TODO_APP_CLEAR_BOARD_TOOLTIP = 'איפוס לוח';
 export const TODO_APP_DELETE_TASK_TITLE = 'למחוק את הפתק?';
-export const TODO_APP_DELETE_TASK_MESSAGE_PREFIX = 'הפעולה תמחוק לצמיתות את הפתק:';
+export const TODO_APP_DELETE_TASK_MESSAGE_PREFIX = 'הפעולה תמחק לצמיתות את הפתק:';
 export const TODO_APP_DELETE_CATEGORY_TITLE = 'למחוק את התווית?';
 export const TODO_APP_DELETE_CATEGORY_CONFIRM_PREFIX = 'נא לאשר שברצונך למחוק את התווית ';
 export const TODO_APP_DELETE_CATEGORY_KEPT_NOTICE = (generalCategoryName) =>
@@ -68,7 +70,7 @@ export const TODO_APP_RESET_TITLE = 'איפוס כל הלוח?';
 export const TODO_APP_RESET_MESSAGE = 'זהירות! פעולה זו תמחק את כל התוויות, הפתקים והגדרות שלך.';
 export const TODO_APP_RESET_CONFIRM_TEXT = 'כן, למחוק הכל';
 export const TODO_APP_BULK_DELETE_MESSAGE = (count) => `האם למחוק את ${count} הפתקים שנבחרו?`;
-export const TODO_APP_SEARCH_PLACEHOLDER = ' חיפוש פתק - לפי כותרת או תוכן';
+export const TODO_APP_SEARCH_PLACEHOLDER = 'חיפוש פתק - לפי כותרת או תוכן';
 export const TODO_APP_FILTER_IMPORTANT_LABEL = 'דחופות';
 export const TODO_APP_FILTER_IN_PROGRESS_LABEL = 'בביצוע';
 export const TODO_APP_FILTER_OVERDUE_LABEL = 'באיחור';

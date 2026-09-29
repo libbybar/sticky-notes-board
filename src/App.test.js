@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from './App';
 import { DEFAULT_COLOR, DEFAULT_BORDER } from './style/style-constants';
@@ -24,6 +24,8 @@ import {
   LOGIN_NAME_PLACEHOLDER,
   LOGIN_STORAGE_NOTICE,
   LOGIN_SUBMIT_BUTTON,
+  STICKY_NOTE_BOLD_LABEL,
+  STICKY_NOTE_ITALIC_LABEL,
   STICKY_NOTE_CATEGORY_LABEL,
   STICKY_NOTE_CHECK_TITLE_COMPLETED,
   STICKY_NOTE_CHECK_TITLE_IN_PROGRESS,
@@ -99,6 +101,25 @@ const deleteCategory = (name) => {
 const addNote = (text) => {
   userEvent.type(screen.getByRole('textbox', { name: TASK_INPUT_PLACEHOLDER }), text);
   userEvent.click(screen.getByRole('button', { name: TASK_INPUT_SUBMIT_BUTTON }));
+};
+
+// Real .focus() moves document.activeElement, unlike fireEvent.focus(); wrapping it in
+// act() makes sure any React state update it triggers (e.g. a field switching from its
+// formatted to its raw view) is flushed before the next interaction runs.
+const focusElement = (el) => act(() => { el.focus(); });
+
+// Selects characters [start, end) of el's own first text node and fires selectionchange,
+// the document-level signal a real text selection (mouse or touch) would send.
+const selectTextRange = (el, start, end) => {
+  act(() => {
+    const range = document.createRange();
+    range.setStart(el.firstChild, start);
+    range.setEnd(el.firstChild, end);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+    document.dispatchEvent(new Event('selectionchange'));
+  });
 };
 
 const getSearchField = () => screen.getByRole('textbox', { name: TODO_APP_SEARCH_PLACEHOLDER.trim() });
@@ -983,11 +1004,11 @@ describe('note fields are exposed by name', () => {
     render(<App />);
     const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
 
-    textField.focus();
+    focusElement(textField);
     userEvent.keyboard('[Enter]');
     expect(textField).not.toHaveFocus();
 
-    textField.focus();
+    focusElement(textField);
     userEvent.keyboard('{Shift>}[Enter]{/Shift}');
     expect(textField).toHaveFocus();
   });
@@ -997,11 +1018,11 @@ describe('note fields are exposed by name', () => {
     render(<App />);
     const titleField = screen.getByRole('textbox', { name: STICKY_NOTE_TITLE_PLACEHOLDER });
 
-    titleField.focus();
+    focusElement(titleField);
     userEvent.keyboard('[Enter]');
     expect(titleField).not.toHaveFocus();
 
-    titleField.focus();
+    focusElement(titleField);
     userEvent.keyboard('{Shift>}[Enter]{/Shift}');
     expect(titleField).toHaveFocus();
   });
@@ -1023,6 +1044,142 @@ describe('note fields are exposed by name', () => {
     fireEvent.change(screen.getByLabelText(STICKY_NOTE_DATE_LABEL), { target: { value: '2031-02-03' } });
 
     expect(screen.getByLabelText(STICKY_NOTE_DATE_LABEL)).toHaveValue('2031-02-03');
+  });
+
+  test('the note text shows *bold*/_italic_ markers formatted when not being edited, and raw while editing', () => {
+    seedOneNote({ text: 'buy *milk* and _eggs_' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    expect(textField.querySelector('strong')).toHaveTextContent('milk');
+    expect(textField.querySelector('em')).toHaveTextContent('eggs');
+    expect(textField.textContent).toBe('buy milk and eggs');
+
+    fireEvent.focus(textField);
+
+    expect(textField.textContent).toBe('buy *milk* and _eggs_');
+  });
+
+  test('selecting text in the note content shows a toolbar that wraps the selection in *bold*', () => {
+    seedOneNote({ text: 'buy milk today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 4, 8); // "milk"
+
+    const boldButton = screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL });
+    userEvent.click(boldButton);
+
+    expect(textField.textContent).toBe('buy *milk* today');
+  });
+
+  test('selecting text in the note content and choosing italic wraps the selection in _italic_', () => {
+    seedOneNote({ text: 'buy milk today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 4, 8); // "milk"
+
+    const italicButton = screen.getByRole('button', { name: STICKY_NOTE_ITALIC_LABEL });
+    userEvent.click(italicButton);
+
+    expect(textField.textContent).toBe('buy _milk_ today');
+  });
+
+  test('clicking bold again on text that includes the markers removes the bold instead of adding more', () => {
+    seedOneNote({ text: 'buy *milk* today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 4, 10); // "*milk*"
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL }));
+
+    expect(textField.textContent).toBe('buy milk today');
+  });
+
+  test('clicking bold again on just the inner text (markers just outside the selection) also removes the bold', () => {
+    seedOneNote({ text: 'buy *milk* today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 5, 9); // "milk", without the asterisks
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL }));
+
+    expect(textField.textContent).toBe('buy milk today');
+  });
+
+  test('clicking italic again on an imprecise selection (not aligned to the markers) still removes the italic instead of wrapping again', () => {
+    seedOneNote({ text: 'buy _milk_ today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 6, 9); // "ilk" - a subset of the italic span, not its exact edges
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_ITALIC_LABEL }));
+
+    expect(textField.textContent).toBe('buy milk today');
+  });
+
+  test('applying bold then italic to the same text combines them', () => {
+    seedOneNote({ text: 'buy milk today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 4, 8); // "milk"
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL }));
+    expect(textField.textContent).toBe('buy *milk* today');
+
+    selectTextRange(textField, 5, 9); // "milk" inside the asterisks
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_ITALIC_LABEL }));
+    expect(textField.textContent).toBe('buy *_milk_* today');
+
+    fireEvent.blur(textField);
+
+    const strong = textField.querySelector('strong');
+    expect(strong).not.toBeNull();
+    expect(strong.querySelector('em')).toHaveTextContent('milk');
+  });
+
+  test('Ctrl+B toggles bold on the selection without needing the toolbar', () => {
+    seedOneNote({ text: 'buy milk today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 4, 8); // "milk"
+    userEvent.keyboard('{Control>}b{/Control}');
+
+    expect(textField.textContent).toBe('buy *milk* today');
+  });
+
+  test('Ctrl+I toggles italic on the selection without needing the toolbar', () => {
+    seedOneNote({ text: 'buy milk today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    selectTextRange(textField, 4, 8); // "milk"
+    userEvent.keyboard('{Control>}i{/Control}');
+
+    expect(textField.textContent).toBe('buy _milk_ today');
+  });
+
+  test('the title shows *bold*/_italic_ markers formatted when not being edited, and raw while editing', () => {
+    seedOneNote({ title: '*urgent* _task_' });
+    render(<App />);
+    const titleField = screen.getByRole('textbox', { name: STICKY_NOTE_TITLE_PLACEHOLDER });
+
+    expect(titleField.querySelector('strong')).toHaveTextContent('urgent');
+    expect(titleField.querySelector('em')).toHaveTextContent('task');
+
+    fireEvent.focus(titleField);
+
+    expect(titleField.textContent).toBe('*urgent* _task_');
   });
 });
 
@@ -1114,7 +1271,7 @@ describe('checklist notes', () => {
     seedBoard({ tasks: [makeTask({ text: 'milk' })] });
     render(<App />);
 
-    screen.getByRole('button', { name: STICKY_NOTE_CONVERT_TO_CHECKLIST_LABEL }).focus();
+    focusElement(screen.getByRole('button', { name: STICKY_NOTE_CONVERT_TO_CHECKLIST_LABEL }));
     userEvent.keyboard('[Enter]');
 
     expect(getItemTextboxes()[0]).toHaveFocus();
@@ -1134,7 +1291,7 @@ describe('checklist notes', () => {
     seedChecklistNote([{ text: 'milk' }]);
     render(<App />);
 
-    getItemTextboxes()[0].focus();
+    focusElement(getItemTextboxes()[0]);
     userEvent.keyboard('[Enter]');
 
     const items = getItemTextboxes();
@@ -1147,7 +1304,7 @@ describe('checklist notes', () => {
     seedChecklistNote([{ text: 'milk' }]);
     render(<App />);
 
-    getItemTextboxes()[0].focus();
+    focusElement(getItemTextboxes()[0]);
     userEvent.keyboard('{Shift>}[Enter]{/Shift}');
 
     expect(getItemTextboxes()).toHaveLength(1);
@@ -1157,7 +1314,7 @@ describe('checklist notes', () => {
     seedChecklistNote([{ text: 'milk' }, { text: '' }]);
     render(<App />);
 
-    getItemTextboxes()[1].focus();
+    focusElement(getItemTextboxes()[1]);
     userEvent.keyboard('[Backspace]');
 
     const items = getItemTextboxes();
@@ -1169,7 +1326,7 @@ describe('checklist notes', () => {
     seedChecklistNote([{ text: '' }]);
     render(<App />);
 
-    getItemTextboxes()[0].focus();
+    focusElement(getItemTextboxes()[0]);
     userEvent.keyboard('[Backspace]');
 
     expect(getItemTextboxes()).toHaveLength(1);
@@ -1180,12 +1337,24 @@ describe('checklist notes', () => {
     render(<App />);
 
     const items = getItemTextboxes();
-    items[0].focus();
+    focusElement(items[0]);
     userEvent.keyboard('[ArrowDown]');
     expect(items[1]).toHaveFocus();
 
     userEvent.keyboard('[ArrowUp]');
     expect(items[0]).toHaveFocus();
+  });
+
+  test('a checklist item shows *bold*/_italic_ markers formatted when not being edited, and raw while editing', () => {
+    seedChecklistNote([{ text: 'buy *milk*' }]);
+    render(<App />);
+    const item = getItemTextboxes()[0];
+
+    expect(item.querySelector('strong')).toHaveTextContent('milk');
+
+    fireEvent.focus(item);
+
+    expect(item.textContent).toBe('buy *milk*');
   });
 });
 

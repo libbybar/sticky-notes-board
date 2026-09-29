@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
-import { CATEGORY_GENERAL, STATUS_PENDING, FILTER_ALL } from '../constants';
+import { CATEGORY_GENERAL, STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED, FILTER_ALL } from '../constants';
 import { TodoRepository } from '../services/TodoRepository';
 
 let checklistItemCounter = 0;
@@ -27,22 +27,23 @@ export const useTodoManager = () => {
     const [activeStatusFilter, setActiveStatusFilter] = useState('all');
 
     useEffect(() => {
-    if (userName) {
-        TodoRepository.saveTasks(tasks);
-    }
-}, [tasks, userName]);
+        if (userName) {
+            TodoRepository.saveTasks(tasks);
+        }
+    }, [tasks, userName]);
 
-useEffect(() => {
-    if (userName) {
-        TodoRepository.saveCategories(categories);
-    }
-}, [categories, userName]);
+    useEffect(() => {
+        if (userName) {
+            TodoRepository.saveCategories(categories);
+        }
+    }, [categories, userName]);
 
-useEffect(() => {
-    if (userName) {
-        TodoRepository.saveUser(userName);
-    }
-}, [userName]);
+    useEffect(() => {
+        if (userName) {
+            TodoRepository.saveUser(userName);
+        }
+    }, [userName]);
+
     const _updateTask = (id, updateFn) => {
         setTasks(prev => prev.map(t =>
             t.id === id ? { ...t, ...updateFn(t) } : t
@@ -67,9 +68,9 @@ useEffect(() => {
 
     const changeTaskDeadline = (id, deadline) => _updateTask(id, () => ({ deadline }));
 
-    const moveToCategory = (id, category) => _updateTask(id, () => ({ category }));
+    const updateTaskCategory = (id, category) => _updateTask(id, () => ({ category }));
 
-const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImportant }));
+    const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImportant }));
 
     const convertToChecklist = (id) => _updateTask(id, (task) => {
         const items = (task.text || '')
@@ -120,14 +121,14 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
     const toggleTaskStatus = (id) => {
         _updateTask(id, (task) => {
             const nextStatus = {
-                'pending': 'in-progress',
-                'in-progress': 'completed',
-                'completed': 'pending'
-            }[task.status] || 'in-progress';
+                [STATUS_PENDING]: STATUS_IN_PROGRESS,
+                [STATUS_IN_PROGRESS]: STATUS_COMPLETED,
+                [STATUS_COMPLETED]: STATUS_PENDING
+            }[task.status] || STATUS_IN_PROGRESS;
 
             return {
                 status: nextStatus,
-                completed: nextStatus === 'completed'
+                completed: nextStatus === STATUS_COMPLETED
             };
         });
     };
@@ -170,9 +171,9 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
 
             let matchesStatus = true;
             if (activeStatusFilter === 'important') matchesStatus = task.isImportant;
-            if (activeStatusFilter === 'in-progress') matchesStatus = task.status === 'in-progress';
+            if (activeStatusFilter === STATUS_IN_PROGRESS) matchesStatus = task.status === STATUS_IN_PROGRESS;
             if (activeStatusFilter === 'overdue') matchesStatus = isTaskOverdue(task);
-            if (activeStatusFilter === 'completed') matchesStatus = task.status === 'completed';
+            if (activeStatusFilter === STATUS_COMPLETED) matchesStatus = task.status === STATUS_COMPLETED;
 
             return matchesSearch && matchesCategory && matchesStatus;
         })
@@ -183,9 +184,8 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
             if (!b.deadline) return -1;
             return new Date(a.deadline) - new Date(b.deadline);
         });
-   
+
     return {
-    
         userName,
         categories,
         visibleTasks,
@@ -204,7 +204,7 @@ const toggleImportant = (id) => _updateTask(id, (t) => ({ isImportant: !t.isImpo
         renameTask,
         updateTaskContent,
         changeTaskDeadline,
-        moveToCategory,
+        updateTaskCategory,
         toggleImportant,
         convertToChecklist,
         convertToText,

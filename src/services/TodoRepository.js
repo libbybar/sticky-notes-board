@@ -1,7 +1,9 @@
-import { STORAGE_KEY_TASKS,
+import {
+    STORAGE_KEY_TASKS,
     STORAGE_KEY_USER,
     STORAGE_KEY_CATEGORIES,
-    CATEGORY_GENERAL } from '../constants';
+    CATEGORY_GENERAL
+} from '../constants';
 import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
 
 const createGeneralCategory = () => (
@@ -27,8 +29,8 @@ const normalizeTask = (task) => {
     };
 };
 
-    export const TodoRepository = {
-        getAllData() {
+export const TodoRepository = {
+    getAllData() {
         try {
             const savedTasks = localStorage.getItem(STORAGE_KEY_TASKS);
             const savedCategories = localStorage.getItem(STORAGE_KEY_CATEGORIES);
@@ -58,7 +60,7 @@ const normalizeTask = (task) => {
         localStorage.setItem(STORAGE_KEY_USER, userName);
     },
     clearAll() {
-        [STORAGE_KEY_USER, STORAGE_KEY_TASKS, STORAGE_KEY_CATEGORIES].forEach(key => 
+        [STORAGE_KEY_USER, STORAGE_KEY_TASKS, STORAGE_KEY_CATEGORIES].forEach(key =>
             localStorage.removeItem(key)
         );
     }

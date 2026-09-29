@@ -1,5 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useLayoutEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import * as S from '../style/StickyNote.styles';
+import { renderFormattedText, useFormattedField, handleFormatShortcut } from '../utils/richText';
 import {
   PinRedIcon,
   PinBlueIcon,
@@ -12,7 +14,7 @@ import {
   NoteToListIcon
 } from '../assets/icons';
 import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
-import { CATEGORY_GENERAL } from '../constants';
+import { CATEGORY_GENERAL, STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED } from '../constants';
 import {
   STICKY_NOTE_DELETE_TITLE,
   STICKY_NOTE_TITLE_PLACEHOLDER,
@@ -31,8 +33,120 @@ import {
   STICKY_NOTE_CONVERT_TO_CHECKLIST_LABEL,
   STICKY_NOTE_CONVERT_TO_TEXT_LABEL,
   STICKY_NOTE_CHECKLIST_ITEM_LABEL,
-  STICKY_NOTE_CHECKLIST_ITEM_TEXT_LABEL
+  STICKY_NOTE_CHECKLIST_ITEM_TEXT_LABEL,
+  STICKY_NOTE_BOLD_LABEL,
+  STICKY_NOTE_ITALIC_LABEL
 } from '../ui-texts';
+
+// Selecting text inside a rotated/scaled note (NoteContainer has a CSS transform) would break
+// position: fixed math if rendered in place - a transform creates a new containing block for
+// fixed-position descendants. Portaling to document.body keeps the toolbar truly viewport-fixed.
+const TOOLBAR_MARGIN = 8;
+const TOOLBAR_HALF_WIDTH = 60;
+const TOOLBAR_HEIGHT = 40;
+
+const FormattingToolbar = ({ rect, onBold, onItalic }) => {
+  // preventDefault() on touchstart (needed so tapping the toolbar doesn't blur/collapse the
+  // field's selection first) can suppress the click some touch browsers would otherwise
+  // synthesize afterward. Firing the action directly on touchend sidesteps that, and this
+  // flag stops it from also firing a second time if a click does still follow.
+  const touchHandledRef = useRef(false);
+
+  if (!rect) return null;
+
+  const left = Math.min(
+    Math.max(rect.left + rect.width / 2, TOOLBAR_HALF_WIDTH),
+    window.innerWidth - TOOLBAR_HALF_WIDTH
+  );
+  // Flips below the selection when there isn't room above (e.g. a note scrolled near the
+  // top of the viewport), so the toolbar doesn't render off-screen.
+  const showBelow = rect.top < TOOLBAR_HEIGHT + TOOLBAR_MARGIN;
+  const style = showBelow
+    ? { top: rect.bottom + TOOLBAR_MARGIN, left, transform: 'translate(-50%, 0)' }
+    : { top: rect.top - TOOLBAR_MARGIN, left, transform: 'translate(-50%, -100%)' };
+
+  const bind = (action) => ({
+    onTouchEnd: (e) => {
+      e.preventDefault();
+      touchHandledRef.current = true;
+      action();
+    },
+    onClick: () => {
+      if (touchHandledRef.current) {
+        touchHandledRef.current = false;
+        return;
+      }
+      action();
+    }
+  });
+
+  return createPortal(
+    <S.FormatToolbar
+      style={style}
+      onMouseDown={(e) => e.preventDefault()}
+      onTouchStart={(e) => e.preventDefault()}
+    >
+      <S.FormatToolbarButton type="button" aria-label={STICKY_NOTE_BOLD_LABEL} {...bind(onBold)}>
+        <strong>B</strong>
+      </S.FormatToolbarButton>
+      <S.FormatToolbarButton type="button" aria-label={STICKY_NOTE_ITALIC_LABEL} {...bind(onItalic)}>
+        <em>I</em>
+      </S.FormatToolbarButton>
+    </S.FormatToolbar>,
+    document.body
+  );
+};
+
+const ChecklistItemField = ({
+  id,
+  item,
+  index,
+  total,
+  completed,
+  onToggleChecklistItem,
+  onUpdateChecklistItemText,
+  onItemKeyDown,
+  registerRef
+}) => {
+  const elRef = useRef(null);
+  const formatting = useFormattedField(item.text, elRef);
+
+  return (
+    <S.ChecklistItemRow>
+      <S.ChecklistCheckboxWrapper>
+        <S.ChecklistCheckbox
+          type="checkbox"
+          aria-label={STICKY_NOTE_CHECKLIST_ITEM_LABEL(index + 1, total, item.text)}
+          checked={!!item.checked}
+          disabled={completed}
+          onChange={() => onToggleChecklistItem && onToggleChecklistItem(id, item.id)}
+        />
+      </S.ChecklistCheckboxWrapper>
+      <S.ChecklistItemText
+        ref={(el) => { elRef.current = el; registerRef(item.id, el); }}
+        role="textbox"
+        aria-label={STICKY_NOTE_CHECKLIST_ITEM_TEXT_LABEL(index + 1, total)}
+        aria-multiline="true"
+        aria-readonly={completed}
+        $isChecked={!!item.checked}
+        contentEditable={!completed}
+        suppressContentEditableWarning={true}
+        onFocus={formatting.handleFocus}
+        onBlur={(e) => {
+          formatting.handleBlur();
+          onUpdateChecklistItemText && onUpdateChecklistItemText(id, item.id, e.target.textContent);
+        }}
+        onKeyDown={(e) => {
+          if (handleFormatShortcut(e, formatting)) return;
+          onItemKeyDown(e, index, item.id);
+        }}
+      >
+        {formatting.isEditing ? item.text : renderFormattedText(item.text)}
+      </S.ChecklistItemText>
+      <FormattingToolbar rect={formatting.selectionRect} onBold={formatting.applyBold} onItalic={formatting.applyItalic} />
+    </S.ChecklistItemRow>
+  );
+};
 
 const StickyNote = ({
   task,
@@ -57,9 +171,12 @@ const StickyNote = ({
 
   const itemRefs = useRef({});
   const taskTextRef = useRef(null);
+  const titleRef = useRef(null);
   const pendingFocusIndexRef = useRef(null);
   const pendingFocusPlainTextRef = useRef(false);
   const prevItemsLengthRef = useRef(task?.checklistItems?.length ?? 0);
+  const taskTextFormatting = useFormattedField(task?.text || '', taskTextRef);
+  const titleFormatting = useFormattedField(task?.title || '', titleRef);
 
   // el.focus() alone doesn't reliably show a caret in a contentEditable box,
   // so typing right after a programmatic focus can be silently dropped.
@@ -101,7 +218,10 @@ const StickyNote = ({
     }
   };
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so this focus restoration commits synchronously with
+  // the DOM change that triggered it, instead of as a deferred passive effect - matching
+  // the same reasoning as the caret-restoration effect in useFormattedField.
+  useLayoutEffect(() => {
     const items = task?.checklistItems || [];
     if (pendingFocusIndexRef.current !== null && items.length !== prevItemsLengthRef.current) {
       const targetIndex = Math.min(pendingFocusIndexRef.current, items.length - 1);
@@ -177,8 +297,8 @@ const StickyNote = ({
     if (typeof onDelete === 'function') onDelete(id);
   };
   const importantLabel = isImportant ? STICKY_NOTE_UNMARK_IMPORTANT : STICKY_NOTE_MARK_IMPORTANT;
-  const checkTitle = task.status === 'pending' ? STICKY_NOTE_CHECK_TITLE_PENDING :
-    task.status === 'in-progress' ? STICKY_NOTE_CHECK_TITLE_IN_PROGRESS :
+  const checkTitle = task.status === STATUS_PENDING ? STICKY_NOTE_CHECK_TITLE_PENDING :
+    task.status === STATUS_IN_PROGRESS ? STICKY_NOTE_CHECK_TITLE_IN_PROGRESS :
       STICKY_NOTE_CHECK_TITLE_COMPLETED;
   const deadlineValue = deadline ? new Date(deadline).toISOString().split('T')[0] : '';
   const formattedDeadline = deadline ? new Date(deadline).toLocaleDateString('he-IL') : '';
@@ -193,7 +313,7 @@ const StickyNote = ({
       $isImportant={!!isImportant}
     >
       <S.PinWrapper $status={task.status} $rotation={task.pinRotation}>
-        {task.status === 'in-progress'
+        {task.status === STATUS_IN_PROGRESS
           ? <PinBlueIcon width={30} height={30} aria-hidden="true" />
           : <PinRedIcon width={30} height={30} aria-hidden="true" />}
       </S.PinWrapper>
@@ -264,6 +384,7 @@ const StickyNote = ({
 
         <S.HeaderRow>
           <S.TitleInput
+            ref={titleRef}
             role="textbox"
             aria-label={STICKY_NOTE_TITLE_PLACEHOLDER}
             aria-multiline="false"
@@ -271,8 +392,13 @@ const StickyNote = ({
             contentEditable={!completed}
             suppressContentEditableWarning={true}
             $isCompleted={completed}
-            onBlur={(e) => onUpdateTitle && onUpdateTitle(id, e.target.innerText)}
+            onFocus={titleFormatting.handleFocus}
+            onBlur={(e) => {
+              titleFormatting.handleBlur();
+              onUpdateTitle && onUpdateTitle(id, e.target.textContent);
+            }}
             onKeyDown={(e) => {
+              if (handleFormatShortcut(e, titleFormatting)) return;
               if (e.key !== 'Enter') return;
               e.preventDefault();
               // A single-line title has no legitimate line break, but Shift+Enter
@@ -282,8 +408,9 @@ const StickyNote = ({
               }
             }}
           >
-            {title}
+            {titleFormatting.isEditing ? title : renderFormattedText(title)}
           </S.TitleInput>
+          <FormattingToolbar rect={titleFormatting.selectionRect} onBold={titleFormatting.applyBold} onItalic={titleFormatting.applyItalic} />
         </S.HeaderRow>
       </S.NoteHeaderArea>
 
@@ -292,31 +419,18 @@ const StickyNote = ({
           <>
             <S.ChecklistList>
               {checklistItems.map((item, index) => (
-                <S.ChecklistItemRow key={item.id}>
-                  <S.ChecklistCheckboxWrapper>
-                    <S.ChecklistCheckbox
-                      type="checkbox"
-                      aria-label={STICKY_NOTE_CHECKLIST_ITEM_LABEL(index + 1, checklistItems.length, item.text)}
-                      checked={!!item.checked}
-                      disabled={completed}
-                      onChange={() => onToggleChecklistItem && onToggleChecklistItem(id, item.id)}
-                    />
-                  </S.ChecklistCheckboxWrapper>
-                  <S.ChecklistItemText
-                    ref={(el) => { itemRefs.current[item.id] = el; }}
-                    role="textbox"
-                    aria-label={STICKY_NOTE_CHECKLIST_ITEM_TEXT_LABEL(index + 1, checklistItems.length)}
-                    aria-multiline="true"
-                    aria-readonly={completed}
-                    $isChecked={!!item.checked}
-                    contentEditable={!completed}
-                    suppressContentEditableWarning={true}
-                    onBlur={(e) => onUpdateChecklistItemText && onUpdateChecklistItemText(id, item.id, e.target.textContent)}
-                    onKeyDown={(e) => handleItemKeyDown(e, index, item.id)}
-                  >
-                    {item.text}
-                  </S.ChecklistItemText>
-                </S.ChecklistItemRow>
+                <ChecklistItemField
+                  key={item.id}
+                  id={id}
+                  item={item}
+                  index={index}
+                  total={checklistItems.length}
+                  completed={completed}
+                  onToggleChecklistItem={onToggleChecklistItem}
+                  onUpdateChecklistItemText={onUpdateChecklistItemText}
+                  onItemKeyDown={handleItemKeyDown}
+                  registerRef={(itemId, el) => { itemRefs.current[itemId] = el; }}
+                />
               ))}
             </S.ChecklistList>
           </>
@@ -331,16 +445,22 @@ const StickyNote = ({
               $isCompleted={completed}
               contentEditable={!completed}
               suppressContentEditableWarning={true}
-              onBlur={(e) => onUpdateText && onUpdateText(id, e.target.innerText)}
+              onFocus={taskTextFormatting.handleFocus}
+              onBlur={(e) => {
+                taskTextFormatting.handleBlur();
+                onUpdateText && onUpdateText(id, e.target.textContent);
+              }}
               onKeyDown={(e) => {
+                if (handleFormatShortcut(e, taskTextFormatting)) return;
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   e.target.blur();
                 }
               }}
             >
-              {text}
+              {taskTextFormatting.isEditing ? text : renderFormattedText(text)}
             </S.TaskText>
+            <FormattingToolbar rect={taskTextFormatting.selectionRect} onBold={taskTextFormatting.applyBold} onItalic={taskTextFormatting.applyItalic} />
           </>
         )}
       </S.ContentArea>
@@ -370,14 +490,14 @@ const StickyNote = ({
         <S.ActionButtons>
           <S.CheckButton
             $isCompleted={completed}
-            $status={task.status || 'pending'}
+            $status={task.status || STATUS_PENDING}
             onClick={handleUpdateStatus}
             aria-label={checkTitle}
             data-tooltip={checkTitle}
           >
-            {task.status === 'in-progress'
+            {task.status === STATUS_IN_PROGRESS
               ? <InProgressIcon width={18} height={18} aria-hidden="true" />
-              : task.status === 'completed'
+              : task.status === STATUS_COMPLETED
                 ? <CompleteIcon width={18} height={18} aria-hidden="true" />
                 : <TaskIcon width={18} height={18} aria-hidden="true" />}
           </S.CheckButton>

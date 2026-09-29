@@ -20,7 +20,7 @@ import {
   ClearAllIcon
 } from './assets/icons';
 import { useBulkSelection } from './Hooks/useBulkSelection';
-import { CATEGORY_GENERAL, FILTER_ALL } from './constants';
+import { CATEGORY_GENERAL, FILTER_ALL, STATUS_IN_PROGRESS, STATUS_COMPLETED } from './constants';
 import {
   CANCEL_LABEL,
   BULK_DELETE_LABEL,
@@ -259,7 +259,7 @@ const TodoApp = () => {
         renameTask,
         updateTaskContent,
         changeTaskDeadline,
-        moveToCategory,
+        updateTaskCategory,
         toggleImportant,
         convertToChecklist,
         convertToText,
@@ -400,9 +400,9 @@ const confirmCategoryDelete = () => {
                     onClick={() => setActiveStatusFilter(prev => prev === 'important' ? 'all' : 'important')}>
                     <UrgentIcon width={16} height={16} />{TODO_APP_FILTER_IMPORTANT_LABEL}
                 </FilterButton>
-                <FilterButton $active={activeStatusFilter === 'in-progress'}
-                    aria-pressed={activeStatusFilter === 'in-progress'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'in-progress' ? 'all' : 'in-progress')}>
+                <FilterButton $active={activeStatusFilter === STATUS_IN_PROGRESS}
+                    aria-pressed={activeStatusFilter === STATUS_IN_PROGRESS}
+                    onClick={() => setActiveStatusFilter(prev => prev === STATUS_IN_PROGRESS ? 'all' : STATUS_IN_PROGRESS)}>
                     <InProgressIcon width={16} height={16} />{TODO_APP_FILTER_IN_PROGRESS_LABEL}
                 </FilterButton>
                 <FilterButton $active={activeStatusFilter === 'overdue'}
@@ -410,9 +410,9 @@ const confirmCategoryDelete = () => {
                     onClick={() => setActiveStatusFilter(prev => prev === 'overdue' ? 'all' : 'overdue')}>
                     <OverdueIcon width={16} height={16} />{TODO_APP_FILTER_OVERDUE_LABEL}
                 </FilterButton>
-                <FilterButton $active={activeStatusFilter === 'completed'}
-                    aria-pressed={activeStatusFilter === 'completed'}
-                    onClick={() => setActiveStatusFilter(prev => prev === 'completed' ? 'all' : 'completed')}>
+                <FilterButton $active={activeStatusFilter === STATUS_COMPLETED}
+                    aria-pressed={activeStatusFilter === STATUS_COMPLETED}
+                    onClick={() => setActiveStatusFilter(prev => prev === STATUS_COMPLETED ? 'all' : STATUS_COMPLETED)}>
                     <CompleteIcon width={16} height={16} />{TODO_APP_FILTER_COMPLETED_LABEL}
                 </FilterButton>
                 <FilterButton $active={isSelectionMode}
@@ -462,7 +462,7 @@ const confirmCategoryDelete = () => {
                         onUpdateText={updateTaskContent}
                         onUpdateTitle={renameTask}
                         onUpdateDeadline={changeTaskDeadline}
-                        onUpdateCategory={moveToCategory}
+                        onUpdateCategory={updateTaskCategory}
                         onToggleImportant={toggleImportant}
                         onConvertToChecklist={convertToChecklist}
                         onConvertToText={convertToText}
