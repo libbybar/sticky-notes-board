@@ -34,6 +34,14 @@ export const CATEGORY_MANAGER_COLOR_LABEL = (name) => `שינוי צבע של ה
 export const CATEGORY_MANAGER_ADD_LABEL = 'הוספת תווית';
 export const CATEGORY_MANAGER_NEW_COLOR_LABEL = 'בחירת צבע לתווית החדשה';
 
+export const CATEGORY_COLOR_NAME_YELLOW = 'צהוב';
+export const CATEGORY_COLOR_NAME_PINK = 'ורוד';
+export const CATEGORY_COLOR_NAME_GREEN = 'ירוק';
+export const CATEGORY_COLOR_NAME_BLUE = 'תכלת';
+export const CATEGORY_COLOR_NAME_PURPLE = 'סגול';
+export const CATEGORY_COLOR_NAME_ORANGE = 'כתום';
+export const CATEGORY_COLOR_NAME_CORAL = 'אלמוג';
+
 // StickyNote.jsx + StickyNote.styles.js
 export const STICKY_NOTE_DELETE_TITLE = 'מחיקה';
 export const STICKY_NOTE_MARK_IMPORTANT = 'סימון כדחוף';
