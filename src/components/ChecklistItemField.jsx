@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import * as S from '../style/StickyNote.styles';
-import { renderFormattedText, useFormattedField, handleFormatShortcut } from '../utils/richText';
+import { renderFieldText, useFormattedField, handleFormatShortcut } from '../utils/richText';
 import FormatBar from './FormatBar';
 import {
   STICKY_NOTE_CHECKLIST_ITEM_LABEL,
@@ -53,7 +53,7 @@ const ChecklistItemField = ({
             onItemKeyDown(e, index, item.id);
           }}
         >
-          {formatting.isEditing ? item.text : renderFormattedText(item.text)}
+          {renderFieldText(item.text, formatting.isEditing)}
         </S.ChecklistItemText>
       </S.ChecklistItemMain>
       <FormatBar isEditing={formatting.isEditing} onBold={formatting.applyBold} onItalic={formatting.applyItalic} onBlur={formatting.handleBlur} />

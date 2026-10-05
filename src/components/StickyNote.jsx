@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import * as S from '../style/StickyNote.styles';
-import { renderFormattedText, useFormattedField, handleFormatShortcut } from '../utils/richText';
+import { renderFieldText, useFormattedField, handleFormatShortcut } from '../utils/richText';
 import { formatDeadline } from '../utils/dateFormat';
 import { isTaskOverdue } from '../utils/taskDeadline';
 import FormatBar from './FormatBar';
@@ -202,7 +202,7 @@ const StickyNote = ({
               }
             }}
           >
-            {titleFormatting.isEditing ? title : renderFormattedText(title)}
+            {renderFieldText(title, titleFormatting.isEditing)}
           </S.TitleInput>
         </S.HeaderRow>
         <FormatBar isEditing={titleFormatting.isEditing} onBold={titleFormatting.applyBold} onItalic={titleFormatting.applyItalic} onBlur={titleFormatting.handleBlur} />

@@ -1,5 +1,31 @@
 import { render } from '@testing-library/react';
-import { renderFormattedText, buildFormattedTextMap } from './richText';
+import { renderFormattedText, renderFieldText, buildFormattedTextMap } from './richText';
+
+describe('renderFieldText', () => {
+  test('keeps the same text node when switching modes for text with no markers', () => {
+    const { container, rerender } = render(<div>{renderFieldText('plain words', false)}</div>);
+    const textNodeBeforeFocus = container.firstChild.firstChild;
+
+    rerender(<div>{renderFieldText('plain words', true)}</div>);
+
+    expect(container.firstChild.firstChild).toBe(textNodeBeforeFocus);
+  });
+
+  test('shows the raw markers while editing and hides them otherwise', () => {
+    const { container, rerender } = render(<div>{renderFieldText('say *hi*', true)}</div>);
+    expect(container.textContent).toBe('say *hi*');
+
+    rerender(<div>{renderFieldText('say *hi*', false)}</div>);
+    expect(container.textContent).toBe('say hi');
+    expect(container.querySelector('strong')).toHaveTextContent('hi');
+  });
+
+  test('renders nothing for empty text so the field still matches :empty', () => {
+    const { container } = render(<div>{renderFieldText('', true)}</div>);
+
+    expect(container.firstChild).toBeEmptyDOMElement();
+  });
+});
 
 describe('renderFormattedText', () => {
   test('wraps *text* in <strong> and strips the markers', () => {

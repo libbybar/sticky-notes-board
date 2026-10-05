@@ -36,6 +36,25 @@ export const renderFormattedText = (text) => {
     return nodes;
 };
 
+// The children a *bold*/_italic_ field should render in either mode: raw markers while
+// it's being edited, formatted (markers hidden) otherwise.
+//
+// Edit mode wraps the raw string in an array rather than returning it bare so that both
+// modes hand React the same *shape* of children. Given a bare string one way and an array
+// the other, React tears down the field's text node and builds a new one on every mode
+// switch - even when the text itself is identical, which it is for any field with no
+// markers in it. On touch that happens at the worst possible moment: the switch fires on
+// focus, so the node the browser just anchored a long-press word selection and its IME
+// session to is destroyed underneath them. That cost selection-based formatting entirely
+// and left the soft keyboard coming up only intermittently.
+//
+// Empty text stays empty (not a lone empty string) to keep the fields matching :empty,
+// which is what their placeholder styling hangs off.
+export const renderFieldText = (rawText, isEditing) => {
+    if (!rawText) return [];
+    return isEditing ? [rawText] : renderFormattedText(rawText);
+};
+
 // Maps every position in the formatted (marker-stripped) text to the matching raw offset,
 // so a caret placed while reading the formatted view can be restored correctly once the
 // raw markers reappear in edit mode. rawOffsets[k] is the raw index for formatted position k.
@@ -208,11 +227,18 @@ export const useFormattedField = (rawText, elRef, onCommit) => {
 
     useLayoutEffect(() => {
         if (!isEditing || pendingCaretRef.current === null || !elRef.current) return;
-        const { rawOffsets } = buildFormattedTextMap(rawText);
-        const formattedOffset = Math.min(pendingCaretRef.current, rawOffsets.length - 1);
+        const pendingCaret = pendingCaretRef.current;
+        pendingCaretRef.current = null;
+        const { formatted, rawOffsets } = buildFormattedTextMap(rawText);
+        // With no markers in the text, both modes render the same characters, so whatever
+        // the browser did on its own - placing the caret at the tap, or selecting a word
+        // on a long press - is already correct. Re-placing it here would clear that
+        // selection (setCaretOffset collapses it) for no gain, and on Android dropping
+        // and re-adding the range mid-focus can take the soft keyboard down with it.
+        if (formatted === rawText) return;
+        const formattedOffset = Math.min(pendingCaret, rawOffsets.length - 1);
         const rawOffset = rawOffsets[formattedOffset] ?? rawText.length;
         setCaretOffset(elRef.current, rawOffset);
-        pendingCaretRef.current = null;
         // rawText is intentionally omitted: it only matters at the instant edit mode starts,
         // and including it would re-run this (and fight the user's typing) on every keystroke.
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -238,8 +264,8 @@ export const useFormattedField = (rawText, elRef, onCommit) => {
     // the bar (Tab history), the field's own onBlur handler never fires again to save it.
     const handleBlur = (e) => {
         if (e?.relatedTarget?.closest?.('[data-format-bar]')) return;
-        setIsEditing(false);
         if (onCommit && elRef.current) onCommit(elRef.current.textContent);
+        setIsEditing(false);
     };
     // Lets a parent force edit mode closed after it resets a field without that field
     // ever receiving a blur - e.g. CreateNote remounting its fields on submit: a submit

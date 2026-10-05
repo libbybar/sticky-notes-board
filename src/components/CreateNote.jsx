@@ -5,7 +5,7 @@ import { NoteAddIcon as AddIcon, CalendarIcon } from '../assets/icons';
 import ValidationTooltip from './ValidationTooltip';
 import FormatBar from './FormatBar';
 import {
-  renderFormattedText,
+  renderFieldText,
   useFormattedField,
   handleFormatShortcut,
   insertTextAtCaret
@@ -113,7 +113,7 @@ const CreateNote = ({ onAdd, categories }) => {
           }
         }}
       >
-        {titleFormatting.isEditing ? title : renderFormattedText(title)}
+        {renderFieldText(title, titleFormatting.isEditing)}
       </S.TitleField>
       <FormatBar isEditing={titleFormatting.isEditing} onBold={titleFormatting.applyBold} onItalic={titleFormatting.applyItalic} onBlur={titleFormatting.handleBlur} />
 
@@ -138,7 +138,7 @@ const CreateNote = ({ onAdd, categories }) => {
           }
         }}
       >
-        {contentFormatting.isEditing ? text : renderFormattedText(text)}
+        {renderFieldText(text, contentFormatting.isEditing)}
       </S.ContentField>
       <FormatBar isEditing={contentFormatting.isEditing} onBold={contentFormatting.applyBold} onItalic={contentFormatting.applyItalic} onBlur={contentFormatting.handleBlur} />
 

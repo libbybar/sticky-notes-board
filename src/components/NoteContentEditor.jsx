@@ -1,6 +1,6 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import * as S from '../style/StickyNote.styles';
-import { renderFormattedText, useFormattedField, handleFormatShortcut, insertTextAtCaret } from '../utils/richText';
+import { renderFieldText, useFormattedField, handleFormatShortcut, insertTextAtCaret } from '../utils/richText';
 import FormatBar from './FormatBar';
 import ChecklistItemField from './ChecklistItemField';
 import { STICKY_NOTE_TEXT_LABEL } from '../ui-texts';
@@ -173,7 +173,7 @@ const NoteContentEditor = ({
               }
             }}
           >
-            {taskTextFormatting.isEditing ? text : renderFormattedText(text)}
+            {renderFieldText(text, taskTextFormatting.isEditing)}
           </S.TaskText>
           <FormatBar isEditing={taskTextFormatting.isEditing} onBold={taskTextFormatting.applyBold} onItalic={taskTextFormatting.applyItalic} onBlur={taskTextFormatting.handleBlur} />
         </>

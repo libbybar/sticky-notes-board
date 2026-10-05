@@ -265,20 +265,43 @@ export const ChecklistItemMain = styled.div`
   align-items: flex-start;
   gap: 6px;
 `;
-// Sits in normal page flow right under a field while it's focused (not anchored to
-// the current selection) - on touch devices, the OS's own selection menu (Copy/...)
-// draws in roughly the same spot a selection-anchored toolbar would, hiding it; an
-// always-visible bar sidesteps that. Shown on desktop too, for one consistent look.
+// Always rendered (even with no bar inside it) and takes up no vertical space, so the
+// bar below can be positioned against it without the bar's appearance or removal ever
+// moving anything. See FormatBar for why that matters.
+export const FormatBarAnchor = styled.div`
+  position: relative;
+  height: 0;
+`;
+// Shown right under a field while it's focused, rather than anchored to the current
+// selection - on touch devices the OS's own selection menu (Copy/...) draws in roughly
+// the same spot a selection-anchored toolbar would, hiding it behind native UI.
+//
+// Taken out of normal flow deliberately: in flow, showing the bar pushed everything
+// below the field down by its own height and hiding it pulled all of that back up. On
+// touch that shift lands in the middle of the tap that caused it (focus moves, the
+// previous field's bar disappears, the target slides out from under the finger), and
+// touch browsers drop a tap whose target moves before the gesture completes - so no
+// sibling field or button in the same note could be tapped while any field was focused.
+// Overlaying is what keeps the layout perfectly still; the bar covers a little of
+// whatever sits below it, but only while that field is being edited.
 export const FormatBar = styled.div`
+  position: absolute;
+  top: 2px;
+  inset-inline-start: 0;
+  z-index: 2;
   display: flex;
   gap: 2px;
   background: #334155;
   border-radius: 8px;
   padding: 4px;
   width: fit-content;
-  margin: 2px 0 4px;
 `;
+// position: relative is load-bearing: touchTarget places its enlarged hit area
+// absolutely, so without it the area anchors to the (absolutely positioned) bar instead
+// of to the button. Both buttons' hit areas then cover the whole bar, and the one
+// painted last wins every tap - pressing B applied italic.
 export const FormatBarButton = styled.button`
+  position: relative;
   background: none;
   border: none;
   color: white;

@@ -32,8 +32,6 @@ const FormatBar = ({ isEditing, onBold, onItalic, onBlur }) => {
     return () => bar.removeEventListener('touchstart', handleTouchStart);
   }, [isEditing]);
 
-  if (!isEditing) return null;
-
   const bind = (action) => ({
     onMouseDown: (e) => e.preventDefault(),
     onTouchEnd: (e) => {
@@ -50,15 +48,22 @@ const FormatBar = ({ isEditing, onBold, onItalic, onBlur }) => {
     }
   });
 
+  // The anchor stays mounted whether or not the bar is: it reserves the positioning
+  // context (and, in a gapped flex parent, its one constant gap) so that showing or
+  // hiding the bar changes nothing about the surrounding layout.
   return (
-    <S.FormatBar ref={barRef} data-format-bar onBlur={onBlur}>
-      <S.FormatBarButton type="button" aria-label={STICKY_NOTE_BOLD_LABEL} {...bind(onBold)}>
-        <strong>B</strong>
-      </S.FormatBarButton>
-      <S.FormatBarButton type="button" aria-label={STICKY_NOTE_ITALIC_LABEL} {...bind(onItalic)}>
-        <em>I</em>
-      </S.FormatBarButton>
-    </S.FormatBar>
+    <S.FormatBarAnchor>
+      {isEditing && (
+        <S.FormatBar ref={barRef} data-format-bar onBlur={onBlur}>
+          <S.FormatBarButton type="button" aria-label={STICKY_NOTE_BOLD_LABEL} {...bind(onBold)}>
+            <strong>B</strong>
+          </S.FormatBarButton>
+          <S.FormatBarButton type="button" aria-label={STICKY_NOTE_ITALIC_LABEL} {...bind(onItalic)}>
+            <em>I</em>
+          </S.FormatBarButton>
+        </S.FormatBar>
+      )}
+    </S.FormatBarAnchor>
   );
 };
 
