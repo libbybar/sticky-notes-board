@@ -44,7 +44,6 @@ const TodoApp = () => {
         activeStatusFilter,
 
         setUserName,
-        setCategories,
         setSearchTerm,
         setSelectedFilter,
         setActiveStatusFilter,
@@ -62,9 +61,12 @@ const TodoApp = () => {
         toggleChecklistItem,
         deleteChecklistItem,
         toggleTaskStatus,
-        confirmDeleteTask,
+        deleteTask,
         deleteMultipleTasks,
         updateMultipleTasksCategory,
+        addCategory,
+        updateCategoryColor,
+        deleteCategory,
         moveCategoryTasks,
         clearFilters,
         clearAppData
@@ -91,7 +93,7 @@ const TodoApp = () => {
 };
 const confirmCategoryDelete = () => {
     if (categoryToDelete) {
-        setCategories(categories.filter(c => c.name !== categoryToDelete));
+        deleteCategory(categoryToDelete);
         moveCategoryTasks(categoryToDelete, CATEGORY_GENERAL);
         if (selectedFilter === categoryToDelete) {
             setSelectedFilter(FILTER_ALL);
@@ -114,7 +116,7 @@ const confirmCategoryDelete = () => {
     };
     const confirmDelete = () => {
         if (taskToDelete) {
-            confirmDeleteTask(taskToDelete.id);
+            deleteTask(taskToDelete.id);
             setIsDeleteModalOpen(false);
             setTaskToDelete(null);
         }
@@ -175,9 +177,9 @@ const confirmCategoryDelete = () => {
             <CreateNote onAdd={addTask} categories={categories} />
             <CategoryManager
                 categories={categories}
-                onAdd={(name, color) => setCategories([...categories, { name, color, borderColor: color }])}
+                onAdd={addCategory}
                 onDelete={requestCategoryDelete}
-                onUpdateColor={(name, color) => setCategories(categories.map(c => c.name === name ? { ...c, color, borderColor: color } : c))}
+                onUpdateColor={updateCategoryColor}
                 selectedFilter={selectedFilter}
                 onFilter={(cat) => setSelectedFilter(prev => prev === cat ? FILTER_ALL : cat)}
             />

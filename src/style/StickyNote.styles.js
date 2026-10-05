@@ -187,7 +187,7 @@ export const CornerShape = styled.span`
 export const TitleInput = styled.div`
   font-weight: bold;
   font-size: 1rem;
-  font-family: 'Varela Round', sans-serif;
+  font-family: 'Playpen Sans Hebrew', 'Varela Round', sans-serif;
   outline: none;
   flex: 1;
   min-width: 0;
@@ -226,9 +226,8 @@ export const ContentArea = styled.div`
   }
 `;
 export const TaskText = styled.div`
-    font-family: 'Assistant', sans-serif;
-    font-weight: 300; 
-    font-style: italic;
+    font-family: 'Playpen Sans Hebrew', 'Assistant', sans-serif;
+    font-weight: 300;
     font-size: 1.3rem;
     line-height: 1.4;
     color: ${TEXT_MAIN};
@@ -259,20 +258,27 @@ export const ChecklistList = styled.ul`
 `;
 export const ChecklistItemRow = styled.li`
   display: flex;
+  flex-direction: column;
+`;
+export const ChecklistItemMain = styled.div`
+  display: flex;
   align-items: flex-start;
   gap: 6px;
 `;
-export const FormatToolbar = styled.div`
-  position: fixed;
+// Sits in normal page flow right under a field while it's focused (not anchored to
+// the current selection) - on touch devices, the OS's own selection menu (Copy/...)
+// draws in roughly the same spot a selection-anchored toolbar would, hiding it; an
+// always-visible bar sidesteps that. Shown on desktop too, for one consistent look.
+export const FormatBar = styled.div`
   display: flex;
   gap: 2px;
   background: #334155;
   border-radius: 8px;
   padding: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  width: fit-content;
+  margin: 2px 0 4px;
 `;
-export const FormatToolbarButton = styled.button`
+export const FormatBarButton = styled.button`
   background: none;
   border: none;
   color: white;
@@ -308,7 +314,7 @@ export const ChecklistCheckbox = styled.input`
 export const ChecklistItemText = styled.div`
     flex: 1;
     min-width: 0;
-    font-family: 'Assistant', sans-serif;
+    font-family: 'Playpen Sans Hebrew', 'Assistant', sans-serif;
     font-weight: 300;
     font-size: 1rem;
     line-height: 1.4;
@@ -368,21 +374,16 @@ export const PinWrapper = styled.div`
    &::after {
       content: '';
       position: absolute;
-      /* האלמנט פורס את כל שטח ראש הסיכה */
       top: 0; left: 0; right: 0; bottom: 0;
       
       background-image: 
-        /* ברק עליון ממוקד */
         radial-gradient(circle at center, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 70%),
-        /* ברק תחתון ממוקד */
         radial-gradient(circle at center, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0) 70%);
       
       background-repeat: no-repeat;
       
-      /*הגדרת גודל לכל ברק בנפרד (רוחב גובה) */
       background-size: 8px 8px, 15px 15px;
       
-      /* מיקום מדויק לכל ברק (ציר X ציר Y) */
       background-position: 35% 15%, 20% 75%;
       
       border-radius: 50%; 

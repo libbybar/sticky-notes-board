@@ -44,7 +44,6 @@ export const hoverFocusTooltip = (align = 'center') => css`
 `;
 
 export const BaseButton = styled.button`
-  /* ערכים קבועים לאחידות */
   border-radius: 12px;
   font-weight: bold;
   cursor: pointer;
@@ -72,7 +71,6 @@ export const BaseInput = styled.input`
   color: ${TEXT_MAIN};
   transition: border-color 0.2s;
 
-  /* גמישות - מאפשר להחזיר גודל קטן בלחיצת כפתור */
   padding: ${props => props.$size === 'small' ? '0.5rem' : '1rem'};
   font-size: ${props => props.$size === 'small' ? '0.9rem' : '1.1rem'};
 

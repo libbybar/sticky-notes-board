@@ -1,5 +1,5 @@
-// ערכים שנשמרים בנתונים ומשמשים את הלוגיקה. לא משנים אותם כשמנסחים מחדש טקסטים:
-// שינוי ערך כאן משאיר פתקים ותוויות שמורים בלי התאמה.
+// Values persisted in stored data and used by the logic. Don't change them when rewording
+// UI texts: changing a value here leaves saved notes and labels unmatched.
 export const CATEGORY_GENERAL = 'כללי';
 export const FILTER_ALL = 'הכל';
 

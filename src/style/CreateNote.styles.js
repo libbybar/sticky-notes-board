@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import { DEFAULT_COLOR, PRIMARY_COLOR, TEXT_MAIN, TEXT_MUTED } from './style-constants';
+import { STICKY_NOTE_TITLE_PLACEHOLDER, CREATE_NOTE_CONTENT_PLACEHOLDER } from '../ui-texts';
 
 // A straight, non-animated variant of StickyNote's NoteContainer: this is the
 // creation surface itself, not a note pinned to the board, so it skips the
@@ -31,40 +32,43 @@ export const Heading = styled.h2`
   color: ${TEXT_MAIN};
 `;
 
-export const TitleField = styled.input`
+export const TitleField = styled.div`
   font-weight: bold;
   font-size: 1rem;
-  font-family: 'Varela Round', sans-serif;
-  border: none;
+  font-family: 'Playpen Sans Hebrew', 'Varela Round', sans-serif;
   outline: none;
-  background: transparent;
   color: ${TEXT_MAIN};
   padding: 0.3rem 0;
   border-bottom: 1px dashed rgba(0, 0, 0, 0.15);
+  unicode-bidi: plaintext;
 
-  &::placeholder {
+  &:empty::before {
+    content: "${STICKY_NOTE_TITLE_PLACEHOLDER}";
     color: #94a3b8;
+    font-weight: normal;
   }
 `;
 
-export const ContentField = styled.textarea`
-  font-family: 'Assistant', sans-serif;
+export const ContentField = styled.div`
+  font-family: 'Playpen Sans Hebrew', 'Assistant', sans-serif;
   font-weight: 300;
-  font-style: italic;
   font-size: 1.1rem;
   line-height: 1.4;
   color: ${TEXT_MAIN};
-  border: none;
   outline: none;
   background: rgba(255, 255, 255, 0.25);
   border-radius: 6px;
-  resize: vertical;
   min-height: 4.5rem;
   padding: 0.5rem;
   direction: rtl;
+  unicode-bidi: plaintext;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 
-  &::placeholder {
+  &:empty::before {
+    content: "${CREATE_NOTE_CONTENT_PLACEHOLDER}";
     color: ${TEXT_MUTED};
+    font-style: normal;
   }
 
   &:focus {

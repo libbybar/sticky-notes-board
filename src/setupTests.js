@@ -6,7 +6,7 @@ import '@testing-library/jest-dom';
 
 // jsdom doesn't implement Range.getBoundingClientRect/getClientRects at all (both throw
 // "is not a function"), unlike every real browser. Code that needs a selection's on-screen
-// position (e.g. positioning a floating toolbar) defends against that at runtime, but the
+// position (e.g. scrolling the caret into view) defends against that at runtime, but the
 // only way to exercise that code's real behavior in tests - rather than just its fallback -
 // is to give jsdom a working, if fake, implementation.
 if (!Range.prototype.getBoundingClientRect) {

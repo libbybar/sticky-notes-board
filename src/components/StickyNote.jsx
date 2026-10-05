@@ -2,7 +2,8 @@ import React, { useRef } from 'react';
 import * as S from '../style/StickyNote.styles';
 import { renderFormattedText, useFormattedField, handleFormatShortcut } from '../utils/richText';
 import { formatDeadline } from '../utils/dateFormat';
-import FormattingToolbar from './FormattingToolbar';
+import { isTaskOverdue } from '../utils/taskDeadline';
+import FormatBar from './FormatBar';
 import NoteContentEditor from './NoteContentEditor';
 import {
   PinRedIcon,
@@ -57,7 +58,11 @@ const StickyNote = ({
   onToggleSelect }) => {
 
   const titleRef = useRef(null);
-  const titleFormatting = useFormattedField(task?.title || '', titleRef);
+  const titleFormatting = useFormattedField(
+    task?.title || '',
+    titleRef,
+    (text) => onUpdateTitle && onUpdateTitle(task?.id, text)
+  );
 
   if (!task) {
     return null;
@@ -75,14 +80,12 @@ const StickyNote = ({
     checklistItems = []
   } = task;
 
-  const isOverdue = deadline &&  // יש כפילות, כי אצל האמא יש פונקצית עזר שבודקת את זה, אבל אני בוחרת להשאיר כאן כי זאת הגנה נדרשת בעיניי גם פה
-    new Date(deadline) < new Date().setHours(0, 0, 0, 0) &&
-    !completed;
+  const isOverdue = isTaskOverdue(task);
 
  const bgColor = categoryInfo?.color ?? DEFAULT_COLOR;
   const borderColor = categoryInfo?.borderColor ?? DEFAULT_BORDER;
 
-  const handleUpdateStatus = (e) => { //הגנה - עוצר את הלחיצה על הפתק כאן ומונע ביעבוע של האירוע לאמא
+  const handleUpdateStatus = (e) => {
     e.stopPropagation();
     if (typeof onUpdateStatus === 'function') {
       onUpdateStatus(task.id);
@@ -93,7 +96,7 @@ const StickyNote = ({
     if (typeof onDelete === 'function') onDelete(id);
   };
   const importantLabel = isImportant ? STICKY_NOTE_UNMARK_IMPORTANT : STICKY_NOTE_MARK_IMPORTANT;
-  const checkTitle = task.status === STATUS_PENDING ? STICKY_NOTE_CHECK_TITLE_PENDING :
+  const statusActionLabel = task.status === STATUS_PENDING ? STICKY_NOTE_CHECK_TITLE_PENDING :
     task.status === STATUS_IN_PROGRESS ? STICKY_NOTE_CHECK_TITLE_IN_PROGRESS :
       STICKY_NOTE_CHECK_TITLE_COMPLETED;
   const deadlineValue = deadline ? new Date(deadline).toISOString().split('T')[0] : '';
@@ -187,10 +190,7 @@ const StickyNote = ({
             suppressContentEditableWarning={true}
             $isCompleted={completed}
             onFocus={titleFormatting.handleFocus}
-            onBlur={(e) => {
-              titleFormatting.handleBlur();
-              onUpdateTitle && onUpdateTitle(id, e.target.textContent);
-            }}
+            onBlur={titleFormatting.handleBlur}
             onKeyDown={(e) => {
               if (handleFormatShortcut(e, titleFormatting)) return;
               if (e.key !== 'Enter') return;
@@ -204,8 +204,8 @@ const StickyNote = ({
           >
             {titleFormatting.isEditing ? title : renderFormattedText(title)}
           </S.TitleInput>
-          <FormattingToolbar rect={titleFormatting.selectionRect} onBold={titleFormatting.applyBold} onItalic={titleFormatting.applyItalic} />
         </S.HeaderRow>
+        <FormatBar isEditing={titleFormatting.isEditing} onBold={titleFormatting.applyBold} onItalic={titleFormatting.applyItalic} onBlur={titleFormatting.handleBlur} />
       </S.NoteHeaderArea>
 
       <NoteContentEditor
@@ -248,8 +248,8 @@ const StickyNote = ({
             $isCompleted={completed}
             $status={task.status || STATUS_PENDING}
             onClick={handleUpdateStatus}
-            aria-label={checkTitle}
-            data-tooltip={checkTitle}
+            aria-label={statusActionLabel}
+            data-tooltip={statusActionLabel}
           >
             {task.status === STATUS_IN_PROGRESS
               ? <InProgressIcon width={18} height={18} aria-hidden="true" />

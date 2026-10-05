@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useRef, useLayoutEffect } from 'react';
 
 // *text* and _text_ mark bold/italic, WhatsApp-style. A marker can't be empty or start with
 // whitespace, so a lone "*" or "5 * 3 = 15" are left as plain text - but this is still a
@@ -200,9 +200,10 @@ const setSelectionOffsets = (el, start, end) => {
 // displayed (formatted, markers hidden), and keeps the caret in the same logical spot
 // across that switch - otherwise clicking back into formatted text to edit it can land
 // the caret in the wrong place, since the raw text is a different length (it has markers).
-export const useFormattedField = (rawText, elRef) => {
+// `onCommit(text)`, if given, is the field's save callback (e.g. onUpdateTitle) - see
+// handleBlur below for why it has to live here rather than in each caller's own onBlur.
+export const useFormattedField = (rawText, elRef, onCommit) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [selectionRect, setSelectionRect] = useState(null);
     const pendingCaretRef = useRef(null);
 
     useLayoutEffect(() => {
@@ -221,50 +222,31 @@ export const useFormattedField = (rawText, elRef) => {
         pendingCaretRef.current = getCaretOffset(elRef.current);
         setIsEditing(true);
     };
-    const handleBlur = () => setIsEditing(false);
-
-    // Shows the formatting toolbar only for a real, non-empty selection made while editing
-    // the raw text - selecting already-formatted (read-only) text isn't supported.
-    // React's onSelect prop isn't reliably wired for contentEditable elements, so this
-    // listens to the document-level selectionchange event directly, only while editing.
-    useEffect(() => {
-        if (!isEditing) {
-            setSelectionRect(null);
-            return;
-        }
-        const handleSelectionChange = () => {
-            try {
-                const selection = window.getSelection();
-                const range = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-                if (!range || selection.isCollapsed || !elRef.current || !elRef.current.contains(range.commonAncestorContainer)) {
-                    setSelectionRect(null);
-                    return;
-                }
-                // getBoundingClientRect covers the whole (possibly multi-line) selection and
-                // is preferred; getClientRects is the fallback for environments missing it.
-                let rect = null;
-                try {
-                    rect = range.getBoundingClientRect();
-                } catch (e) {
-                    rect = null;
-                }
-                if (!rect) {
-                    try {
-                        const rects = range.getClientRects();
-                        rect = rects && rects[0] ? rects[0] : null;
-                    } catch (e) {
-                        rect = null;
-                    }
-                }
-                setSelectionRect(rect);
-            } catch (e) {
-                setSelectionRect(null);
-            }
-        };
-        document.addEventListener('selectionchange', handleSelectionChange);
-        return () => document.removeEventListener('selectionchange', handleSelectionChange);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isEditing]);
+    // FormatBar only renders while isEditing is true, so naively closing on every blur
+    // means Tabbing from the field to the bar's own Bold/Italic button blurs the field,
+    // hides the bar mid-Tab, and yanks focus away before the button can be activated.
+    // relatedTarget is the element about to receive focus; if that's inside this field's
+    // own FormatBar (marked with data-format-bar), the field is still conceptually being
+    // edited, so edit mode stays open and only a real exit (relatedTarget outside both)
+    // closes it. This same handler is wired to the *bar's* own onBlur too (not just the
+    // field's), so Tabbing within the bar is recognized the same way, and Tabbing out of
+    // the bar entirely closes it - the field's own blur fired earlier, when focus first
+    // moved to the bar, so there's no second field-blur to catch that exit otherwise.
+    // Committing the field's current text here too (rather than only in the field's own
+    // onBlur) matters for the same reason: clicking Bold/Italic mutates the field's DOM
+    // directly without updating React state, and if the group is exited straight from
+    // the bar (Tab history), the field's own onBlur handler never fires again to save it.
+    const handleBlur = (e) => {
+        if (e?.relatedTarget?.closest?.('[data-format-bar]')) return;
+        setIsEditing(false);
+        if (onCommit && elRef.current) onCommit(elRef.current.textContent);
+    };
+    // Lets a parent force edit mode closed after it resets a field without that field
+    // ever receiving a blur - e.g. CreateNote remounting its fields on submit: a submit
+    // triggered without blurring first (the whole point of reading the live DOM at
+    // submit time) leaves isEditing stuck true, so FormatBar would reappear next to the
+    // freshly emptied field.
+    const reset = () => setIsEditing(false);
 
     // Toggles the given marker (e.g. "*" for bold) around the current selection: wraps it
     // if it isn't already wrapped, unwraps it if the selection touches an existing span of
@@ -325,8 +307,6 @@ export const useFormattedField = (rawText, elRef) => {
             setSelectionOffsets(el, newStart, newEnd);
         } catch (e) {
             // best effort only
-        } finally {
-            setSelectionRect(null);
         }
     };
 
@@ -334,16 +314,15 @@ export const useFormattedField = (rawText, elRef) => {
         isEditing,
         handleFocus,
         handleBlur,
-        selectionRect,
+        reset,
         applyBold: () => wrapSelectionWith('*'),
         applyItalic: () => wrapSelectionWith('_')
     };
 };
 
 // Ctrl/Cmd+B and Ctrl/Cmd+I toggle bold/italic on the current selection without needing the
-// floating toolbar at all - the toolbar is portaled to document.body (see StickyNote.jsx) so
-// it sits outside the field's own tab order, so a keyboard shortcut is the real accessible
-// path here, the same as in any other rich text editor. Returns true if it handled the key.
+// format bar, so keyboard users have the same path as in any other rich text editor.
+// Returns true if it handled the key.
 export const handleFormatShortcut = (e, formatting) => {
     if (!(e.ctrlKey || e.metaKey)) return false;
     const key = e.key.toLowerCase();

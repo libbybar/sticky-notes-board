@@ -2,21 +2,27 @@ import { useState, useEffect } from 'react';
 import { DEFAULT_COLOR, DEFAULT_BORDER } from '../style/style-constants';
 import { CATEGORY_GENERAL, STATUS_PENDING, STATUS_IN_PROGRESS, STATUS_COMPLETED, FILTER_ALL } from '../constants';
 import { TodoRepository } from '../services/TodoRepository';
+import { isTaskOverdue } from '../utils/taskDeadline';
 
 let checklistItemCounter = 0;
-// מזהה ייחודי גם כשכמה פריטים נוצרים באותה מילישנייה (למשל בפיצול טקסט קיים להמרה)
+// Unique even when several items are created in the same millisecond (e.g. when splitting existing text on conversion)
 const createChecklistItem = (text = '') => ({
     id: `${Date.now()}-${checklistItemCounter++}`,
     text,
     checked: false
 });
 
-// task.text נשמר מסונכרן לפריטי הרשימה בכל שינוי, כדי שחיפוש, חלונית מחיקה וחזרה לפתק רגיל
-// תמיד יראו את התוכן העדכני ולא טקסט ישן מלפני ההמרה לרשימה.
+// task.text is kept in sync with the checklist items on every change, so search, the delete
+// dialog and converting back to a plain note always see current content rather than the
+// stale text from before the conversion to a checklist.
 const joinChecklistText = (checklistItems) => checklistItems.map(item => item.text).join('\n');
 
 export const useTodoManager = () => {
-    const initialData = TodoRepository.getAllData();
+    // Lazy initializer: without it, getAllData() (which reads and JSON.parses three
+    // localStorage keys) would re-run on every render - including on every keystroke
+    // in the search box - even though its result is only ever used once, for the
+    // initial state below.
+    const [initialData] = useState(() => TodoRepository.getAllData());
 
     const [userName, setUserName] = useState(initialData.userName);
     const [tasks, setTasks] = useState(initialData.tasks);
@@ -132,7 +138,7 @@ export const useTodoManager = () => {
             };
         });
     };
-    const confirmDeleteTask = (id) => {
+    const deleteTask = (id) => {
         setTasks(prev => prev.filter(t => t.id !== id));
     };
     const deleteMultipleTasks = (ids) => {
@@ -143,7 +149,18 @@ export const useTodoManager = () => {
             ids.includes(t.id) ? { ...t, category: newCategory } : t
         ));
     };
-    const moveCategoryTasks = (fromCategory, toCategory) => {
+    const addCategory = (name, color) =>
+        setCategories(prev => [...prev, { name, color, borderColor: color }]);
+
+    const updateCategoryColor = (name, color) =>
+        setCategories(prev => prev.map(category =>
+            category.name === name ? { ...category, color, borderColor: color } : category
+        ));
+
+    const deleteCategory = (name) =>
+        setCategories(prev => prev.filter(category => category.name !== name));
+
+    const moveCategoryTasks =(fromCategory, toCategory) => {
         setTasks(prev => prev.map(t =>
             t.category === fromCategory ? { ...t, category: toCategory } : t
         ));
@@ -158,10 +175,6 @@ export const useTodoManager = () => {
         setSearchTerm('');
         setSelectedFilter(FILTER_ALL);
         setActiveStatusFilter('all');
-    };
-    const isTaskOverdue = (task) => {
-        if (!task.deadline || task.completed) return false;
-        return new Date(task.deadline) < new Date().setHours(0, 0, 0, 0);
     };
     const visibleTasks = tasks
         .filter(task => {
@@ -195,7 +208,6 @@ export const useTodoManager = () => {
         activeStatusFilter,
 
         setUserName,
-        setCategories,
         setSearchTerm,
         setSelectedFilter,
         setActiveStatusFilter,
@@ -213,9 +225,12 @@ export const useTodoManager = () => {
         toggleChecklistItem,
         deleteChecklistItem,
         toggleTaskStatus,
-        confirmDeleteTask,
+        deleteTask,
         deleteMultipleTasks,
         updateMultipleTasksCategory,
+        addCategory,
+        updateCategoryColor,
+        deleteCategory,
         moveCategoryTasks,
         clearFilters,
         clearAppData

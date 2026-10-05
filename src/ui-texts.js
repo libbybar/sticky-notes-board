@@ -1,4 +1,4 @@
-// טקסטים משותפים
+// Shared across components
 export const CANCEL_LABEL = 'ביטול';
 export const BULK_DELETE_LABEL = 'מחיקה קבוצתית';
 
@@ -20,10 +20,10 @@ export const CREATE_NOTE_HEADING = 'הוספת פתק חדש';
 export const CREATE_NOTE_TITLE_LABEL = 'כותרת הפתק החדש';
 export const CREATE_NOTE_CONTENT_PLACEHOLDER = 'תוכן פתק חדש';
 export const CREATE_NOTE_CONTENT_LABEL = 'תוכן הפתק החדש';
-export const TASK_INPUT_ERROR_EMPTY = 'נדרש טקסט כדי להדביק פתק';
-export const TASK_INPUT_SUBMIT_BUTTON = 'להדביק ללוח';
-export const TASK_INPUT_DATE_LABEL = 'תאריך יעד לפתק החדש';
-export const TASK_INPUT_CATEGORY_LABEL = 'תווית לפתק החדש';
+export const CREATE_NOTE_ERROR_EMPTY = 'נדרש טקסט כדי להדביק פתק';
+export const CREATE_NOTE_SUBMIT_BUTTON = 'להדביק ללוח';
+export const CREATE_NOTE_DATE_LABEL = 'תאריך יעד לפתק החדש';
+export const CREATE_NOTE_CATEGORY_LABEL = 'תווית לפתק החדש';
 
 // CategoryManager.jsx
 export const CATEGORY_MANAGER_ERROR_EMPTY = 'יש להזין טקסט עבור התווית';
@@ -92,7 +92,7 @@ export const TODO_APP_BULK_BANNER_SELECTED_COUNT = (count) => `בחרתי ${coun
 export const TODO_APP_CHANGE_CATEGORY_OPTION = 'שינוי תווית';
 export const TODO_APP_EMPTY_BOARD_TITLE = 'הלוח עוד ריק';
 export const TODO_APP_EMPTY_BOARD_MESSAGE =
-  `נדביק את הפתק הראשון? אפשר לכתוב אותו בשדה שמעל וללחוץ על "${TASK_INPUT_SUBMIT_BUTTON}".`;
+  `נדביק את הפתק הראשון? אפשר לכתוב אותו בשדה שמעל וללחוץ על "${CREATE_NOTE_SUBMIT_BUTTON}".`;
 export const TODO_APP_NO_RESULTS_TITLE = 'לא נמצאו פתקים';
 export const TODO_APP_NO_RESULTS_MESSAGE = 'אף פתק לא מתאים לחיפוש או לסינון שנבחרו.';
 export const TODO_APP_CLEAR_FILTERS_LABEL = 'ניקוי חיפוש וסינון';

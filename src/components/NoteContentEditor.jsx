@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef } from 'react';
 import * as S from '../style/StickyNote.styles';
 import { renderFormattedText, useFormattedField, handleFormatShortcut, insertTextAtCaret } from '../utils/richText';
-import FormattingToolbar from './FormattingToolbar';
+import FormatBar from './FormatBar';
 import ChecklistItemField from './ChecklistItemField';
 import { STICKY_NOTE_TEXT_LABEL } from '../ui-texts';
 
@@ -22,7 +22,11 @@ const NoteContentEditor = ({
   const pendingFocusIndexRef = useRef(null);
   const prevItemsLengthRef = useRef(checklistItems.length);
   const prevIsChecklistRef = useRef(isChecklist);
-  const taskTextFormatting = useFormattedField(text || '', taskTextRef);
+  const taskTextFormatting = useFormattedField(
+    text || '',
+    taskTextRef,
+    (newText) => onUpdateText && onUpdateText(id, newText)
+  );
 
   // el.focus() alone doesn't reliably show a caret in a contentEditable box,
   // so typing right after a programmatic focus can be silently dropped.
@@ -75,13 +79,18 @@ const NoteContentEditor = ({
       }
       return;
     }
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter') {
       e.preventDefault();
+      if (e.shiftKey) {
+        // Insert "\n" rather than letting the browser add a <br>: items are saved from
+        // textContent, which drops <br> and would silently lose the line break.
+        insertTextAtCaret(e.target, '\n');
+        return;
+      }
       pendingFocusIndexRef.current = index + 1;
       onAddChecklistItem && onAddChecklistItem(id, index);
       return;
     }
-    // Shift+Enter is left to the browser: it inserts a plain line break within the item.
     if (e.key === 'Backspace' && e.target.textContent.trim() === '' && checklistItems.length > 1) {
       e.preventDefault();
       pendingFocusIndexRef.current = Math.max(index - 1, 0);
@@ -149,10 +158,7 @@ const NoteContentEditor = ({
             contentEditable={!completed}
             suppressContentEditableWarning={true}
             onFocus={taskTextFormatting.handleFocus}
-            onBlur={(e) => {
-              taskTextFormatting.handleBlur();
-              onUpdateText && onUpdateText(id, e.target.textContent);
-            }}
+            onBlur={taskTextFormatting.handleBlur}
             onKeyDown={(e) => {
               if (handleFormatShortcut(e, taskTextFormatting)) return;
               // Enter always breaks the line - a touch keyboard has no Shift+Enter combo,
@@ -169,7 +175,7 @@ const NoteContentEditor = ({
           >
             {taskTextFormatting.isEditing ? text : renderFormattedText(text)}
           </S.TaskText>
-          <FormattingToolbar rect={taskTextFormatting.selectionRect} onBold={taskTextFormatting.applyBold} onItalic={taskTextFormatting.applyItalic} />
+          <FormatBar isEditing={taskTextFormatting.isEditing} onBold={taskTextFormatting.applyBold} onItalic={taskTextFormatting.applyItalic} onBlur={taskTextFormatting.handleBlur} />
         </>
       )}
     </S.ContentArea>

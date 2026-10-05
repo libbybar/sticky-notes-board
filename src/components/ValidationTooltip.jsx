@@ -23,10 +23,9 @@ const TooltipContainer = styled.div`
   overflow-wrap: anywhere;
   box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   z-index: 1000;
-  pointer-events: none; /* שלא יפריע ללחיצות מתחתיו */
+  pointer-events: none; /* so it never blocks clicks on whatever is underneath */
   animation: ${fadeInOut} 3s forwards;
 
-  /* החץ הקטן למטה */
   &::after {
     content: '';
     position: absolute;

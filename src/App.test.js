@@ -46,10 +46,10 @@ import {
   STICKY_NOTE_TEXT_LABEL,
   STICKY_NOTE_TITLE_PLACEHOLDER,
   STICKY_NOTE_UNMARK_IMPORTANT,
-  TASK_INPUT_CATEGORY_LABEL,
-  TASK_INPUT_DATE_LABEL,
-  TASK_INPUT_ERROR_EMPTY,
-  TASK_INPUT_SUBMIT_BUTTON,
+  CREATE_NOTE_CATEGORY_LABEL,
+  CREATE_NOTE_DATE_LABEL,
+  CREATE_NOTE_ERROR_EMPTY,
+  CREATE_NOTE_SUBMIT_BUTTON,
   TODO_APP_BULK_BANNER_SELECTED_COUNT,
   TODO_APP_BULK_DELETE_MESSAGE,
   TODO_APP_CHANGE_CATEGORY_OPTION,
@@ -125,7 +125,7 @@ const getCreateNoteContentField = () => screen.getByRole('textbox', { name: CREA
 
 const addNote = (text) => {
   userEvent.type(getCreateNoteContentField(), text);
-  userEvent.click(screen.getByRole('button', { name: TASK_INPUT_SUBMIT_BUTTON }));
+  userEvent.click(screen.getByRole('button', { name: CREATE_NOTE_SUBMIT_BUTTON }));
 };
 
 // Real .focus() moves document.activeElement, unlike fireEvent.focus(); wrapping it in
@@ -174,6 +174,42 @@ test('restores the general category in the add form and the filters when the sto
   expect(getCategoryTag(CATEGORY_GENERAL)).toBeInTheDocument();
 });
 
+// Regression (Moriya, code-read risk): a syntactically-valid-JSON but malformed entry
+// (e.g. a stray null) used to throw uncaught while normalizing tasks, crashing the
+// whole board on load - including the name and categories, which have nothing wrong
+// with them. Each stored key must fail independently (see TodoRepository.js).
+test('a malformed entry in stored tasks does not crash the board - it loads as if tasks were empty', () => {
+  localStorage.setItem(STORAGE_KEY_USER, 'ליבי');
+  localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify([makeCategory(CATEGORY_GENERAL)]));
+  localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify([null]));
+
+  render(<App />);
+
+  expect(screen.getByText('ליבי')).toBeInTheDocument();
+  expect(getCategoryTag(CATEGORY_GENERAL)).toBeInTheDocument();
+  expect(screen.getByText(TODO_APP_EMPTY_BOARD_TITLE)).toBeInTheDocument();
+});
+
+// Regression (Moriya, high severity): dropping the *entire* tasks array on one bad
+// entry (the previous fix) wasn't enough - useTodoManager's own save effect then
+// writes that now-empty array straight back over the stored data on the very next
+// render, permanently losing every valid note that happened to sit next to the one
+// corrupt entry. Only the malformed entry itself must be dropped.
+test('a malformed entry alongside a valid task loses only the malformed one, and does not erase the valid one on the next save', () => {
+  localStorage.setItem(STORAGE_KEY_USER, 'ליבי');
+  localStorage.setItem(STORAGE_KEY_CATEGORIES, JSON.stringify([makeCategory(CATEGORY_GENERAL)]));
+  localStorage.setItem(STORAGE_KEY_TASKS, JSON.stringify([makeTask({ text: 'valid note' }), null]));
+
+  render(<App />);
+
+  expect(screen.getByText('valid note')).toBeInTheDocument();
+  // The save effect (triggered by state existing at all, e.g. on mount) must not have
+  // written the corrupt entry's absence back as "the whole list is gone too".
+  const savedTasks = JSON.parse(localStorage.getItem(STORAGE_KEY_TASKS));
+  expect(savedTasks).toHaveLength(1);
+  expect(savedTasks[0].text).toBe('valid note');
+});
+
 describe('adding a note', () => {
   test('shows the new note and clears the text field', () => {
     seedBoard();
@@ -182,7 +218,7 @@ describe('adding a note', () => {
     addNote('buy milk');
 
     expect(screen.getByText('buy milk')).toBeInTheDocument();
-    expect(getCreateNoteContentField()).toHaveValue('');
+    expect(getCreateNoteContentField().textContent).toBe('');
   });
 
   test('rejects text made only of spaces and explains why', () => {
@@ -191,7 +227,7 @@ describe('adding a note', () => {
 
     addNote('   ');
 
-    expect(screen.getByText(TASK_INPUT_ERROR_EMPTY)).toBeInTheDocument();
+    expect(screen.getByText(CREATE_NOTE_ERROR_EMPTY)).toBeInTheDocument();
     expect(getNoteDeleteButtons()).toHaveLength(0);
   });
 
@@ -199,7 +235,7 @@ describe('adding a note', () => {
     seedBoard();
     render(<App />);
 
-    userEvent.selectOptions(screen.getByRole('combobox', { name: TASK_INPUT_CATEGORY_LABEL }), WORK_CATEGORY);
+    userEvent.selectOptions(screen.getByRole('combobox', { name: CREATE_NOTE_CATEGORY_LABEL }), WORK_CATEGORY);
     addNote('work item');
     userEvent.click(getCategoryTag(CATEGORY_GENERAL));
     expect(screen.queryByText('work item')).not.toBeInTheDocument();
@@ -212,7 +248,7 @@ describe('adding a note', () => {
     seedBoard();
     render(<App />);
 
-    fireEvent.change(screen.getByLabelText(TASK_INPUT_DATE_LABEL), { target: { value: '2030-01-15' } });
+    fireEvent.change(screen.getByLabelText(CREATE_NOTE_DATE_LABEL), { target: { value: '2030-01-15' } });
     addNote('pay rent');
 
     expect(screen.getByDisplayValue('2030-01-15')).toBeInTheDocument();
@@ -227,7 +263,7 @@ describe('adding a note', () => {
       seedBoard();
       render(<App />);
 
-      fireEvent.change(screen.getByLabelText(TASK_INPUT_DATE_LABEL), { target: { value: '2030-01-15' } });
+      fireEvent.change(screen.getByLabelText(CREATE_NOTE_DATE_LABEL), { target: { value: '2030-01-15' } });
       addNote('pay rent');
 
       expect(screen.getByText('15.1.2030')).toBeInTheDocument();
@@ -250,10 +286,11 @@ describe('the create-note card', () => {
   test('Enter in the content field adds a line break instead of submitting the note', () => {
     seedBoard();
     render(<App />);
+    const contentField = getCreateNoteContentField();
 
-    userEvent.type(getCreateNoteContentField(), 'milk{enter}eggs');
+    userEvent.type(contentField, 'milk{enter}eggs');
 
-    expect(getCreateNoteContentField()).toHaveValue('milk\neggs');
+    expect(contentField.textContent).toBe('milk\neggs');
     expect(screen.getByText(TODO_APP_EMPTY_BOARD_TITLE)).toBeInTheDocument();
   });
 
@@ -266,8 +303,90 @@ describe('the create-note card', () => {
 
     expect(screen.getByText('groceries')).toBeInTheDocument();
     expect(screen.getByText('buy milk')).toBeInTheDocument();
-    expect(screen.getByRole('textbox', { name: CREATE_NOTE_TITLE_LABEL })).toHaveValue('');
-    expect(getCreateNoteContentField()).toHaveValue('');
+    expect(screen.getByRole('textbox', { name: CREATE_NOTE_TITLE_LABEL }).textContent).toBe('');
+    expect(getCreateNoteContentField().textContent).toBe('');
+  });
+
+  // Regression (Moriya, mobile DevTools emulation): typing and tapping "Submit" while
+  // the field is still focused added nothing, because submit read `text`/`title` state
+  // that's only synced on blur, and a touch tap doesn't reliably blur the field before
+  // the click handler runs. userEvent.type leaves the field focused (typing alone never
+  // blurs it), and fireEvent.click (unlike userEvent.click) never simulates a blur of
+  // its own either - so this reproduces the race: the field is still focused, and its
+  // content was never synced to state, when submit fires.
+  test('submitting while the content field is still focused (never blurred) still adds the note', () => {
+    seedBoard();
+    render(<App />);
+    const contentField = getCreateNoteContentField();
+
+    userEvent.type(contentField, 'buy milk');
+    fireEvent.click(screen.getByRole('button', { name: CREATE_NOTE_SUBMIT_BUTTON }));
+    expect(screen.getByText('buy milk')).toBeInTheDocument();
+  });
+
+  // Regression (Libi, DevTools mobile-mode check): a submit that fires without the
+  // content field ever blurring also never closes its format bar (isEditing lives in a
+  // hook on CreateNote itself, which a remounted field doesn't reset). Without an
+  // explicit reset, the bar would reappear open next to the freshly emptied field.
+  test('submitting without blurring first does not leave the format bar open next to the reset field', () => {
+    seedBoard();
+    render(<App />);
+    const contentField = getCreateNoteContentField();
+
+    userEvent.type(contentField, 'buy milk');
+    fireEvent.click(screen.getByRole('button', { name: CREATE_NOTE_SUBMIT_BUTTON }));
+
+    expect(screen.queryByRole('button', { name: STICKY_NOTE_BOLD_LABEL })).not.toBeInTheDocument();
+  });
+
+  test('a note added from the create-note card keeps its title and content after a reload', () => {
+    seedBoard();
+    const { unmount } = render(<App />);
+
+    userEvent.type(screen.getByRole('textbox', { name: CREATE_NOTE_TITLE_LABEL }), 'groceries');
+    addNote('buy milk');
+
+    unmount();
+    render(<App />);
+
+    expect(screen.getByText('groceries')).toBeInTheDocument();
+    expect(screen.getByText('buy milk')).toBeInTheDocument();
+  });
+
+  test('the format bar appears for the title and content fields once each is focused', () => {
+    seedBoard();
+    render(<App />);
+    const titleField = screen.getByRole('textbox', { name: CREATE_NOTE_TITLE_LABEL });
+    const contentField = getCreateNoteContentField();
+
+    expect(screen.queryByRole('button', { name: STICKY_NOTE_BOLD_LABEL })).not.toBeInTheDocument();
+
+    focusElement(titleField);
+    expect(screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL })).toBeInTheDocument();
+    fireEvent.blur(titleField);
+    expect(screen.queryByRole('button', { name: STICKY_NOTE_BOLD_LABEL })).not.toBeInTheDocument();
+
+    focusElement(contentField);
+    expect(screen.getByRole('button', { name: STICKY_NOTE_ITALIC_LABEL })).toBeInTheDocument();
+  });
+
+  test('bolding text before saving carries the *bold* marker onto the new note', () => {
+    seedBoard();
+    render(<App />);
+    const contentField = getCreateNoteContentField();
+
+    // A single direct assignment (rather than userEvent.type, which can split typed
+    // text across more than one text node) guarantees contentField.firstChild is the
+    // one text node selectTextRange expects - matching how every other such test
+    // seeds its field via real note data instead of simulated keystrokes.
+    focusElement(contentField);
+    act(() => { contentField.textContent = 'buy milk today'; });
+    selectTextRange(contentField, 4, 8); // "milk"
+    userEvent.click(screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL }));
+    userEvent.click(screen.getByRole('button', { name: CREATE_NOTE_SUBMIT_BUTTON }));
+
+    const savedTextField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+    expect(savedTextField.querySelector('strong')).toHaveTextContent('milk');
   });
 });
 
@@ -408,6 +527,26 @@ describe('filtering', () => {
     expect(screen.queryByText('finished late note')).not.toBeInTheDocument();
     expect(screen.queryByText('future note')).not.toBeInTheDocument();
     expect(screen.queryByText('undated note')).not.toBeInTheDocument();
+  });
+
+  // Regression (Moriya/Libi, reproduced for 2026-10-04 in Los Angeles): a deadline of
+  // "today" was parsed as UTC midnight and compared against local midnight, so west of
+  // UTC a note due today could already show as overdue hours before the day was over.
+  test('a note due today is never overdue, even in a timezone behind UTC', () => {
+    const originalTZ = process.env.TZ;
+    process.env.TZ = 'America/Los_Angeles';
+    try {
+      const now = new Date();
+      const todayLocal = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      seedBoard({ tasks: [makeTask({ text: 'due today', deadline: todayLocal })] });
+      render(<App />);
+
+      clickFilter(TODO_APP_FILTER_OVERDUE_LABEL);
+
+      expect(screen.queryByText('due today')).not.toBeInTheDocument();
+    } finally {
+      process.env.TZ = originalTZ;
+    }
   });
 });
 
@@ -589,6 +728,15 @@ describe('the welcome screen', () => {
 });
 
 describe('reloading the app', () => {
+  test('corrupt label data does not hide the saved notes', () => {
+    seedBoard({ tasks: [makeTask({ text: 'saved note' })] });
+    localStorage.setItem(STORAGE_KEY_CATEGORIES, '{not valid json');
+
+    render(<App />);
+
+    expect(screen.getByText('saved note')).toBeInTheDocument();
+  });
+
   test('keeps the name and the notes', () => {
     const { unmount } = render(<App />);
     userEvent.type(screen.getByRole('textbox', { name: LOGIN_NAME_PLACEHOLDER }), 'ליבי');
@@ -653,7 +801,7 @@ describe('control states and messages are announced', () => {
 
     addNote('   ');
 
-    expect(screen.getByRole('alert')).toHaveTextContent(TASK_INPUT_ERROR_EMPTY);
+    expect(screen.getByRole('alert')).toHaveTextContent(CREATE_NOTE_ERROR_EMPTY);
   });
 
   test('an empty category name is rejected with an announced explanation', () => {
@@ -1138,7 +1286,40 @@ describe('note fields are exposed by name', () => {
     expect(textField.textContent).toBe('buy *milk* and _eggs_');
   });
 
-  test('selecting text in the note content shows a toolbar that wraps the selection in *bold*', () => {
+  test('the format bar appears as soon as the field is focused, before any text is selected, and disappears on blur', () => {
+    seedOneNote({ text: 'buy milk today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    expect(screen.queryByRole('button', { name: STICKY_NOTE_BOLD_LABEL })).not.toBeInTheDocument();
+
+    focusElement(textField);
+
+    expect(screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL })).toBeInTheDocument();
+
+    fireEvent.blur(textField);
+
+    expect(screen.queryByRole('button', { name: STICKY_NOTE_BOLD_LABEL })).not.toBeInTheDocument();
+  });
+
+  // Regression (Libi, DevTools mobile-mode keyboard check): Tabbing from the field to
+  // the format bar's own Bold button blurs the field, and the bar used to close on any
+  // blur - hiding the button, and yanking focus with it, before Enter/Space could ever
+  // activate it. A blur whose relatedTarget is inside the bar must leave it open.
+  test('Tab from the field into the format bar keeps the bar open instead of closing under the incoming focus', () => {
+    seedOneNote({ text: 'buy milk today' });
+    render(<App />);
+    const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
+
+    focusElement(textField);
+    const boldButton = screen.getByRole('button', { name: STICKY_NOTE_BOLD_LABEL });
+    fireEvent.blur(textField, { relatedTarget: boldButton });
+
+    expect(boldButton).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: STICKY_NOTE_ITALIC_LABEL })).toBeInTheDocument();
+  });
+
+  test('clicking bold on a selection wraps it in *bold*', () => {
     seedOneNote({ text: 'buy milk today' });
     render(<App />);
     const textField = screen.getByRole('textbox', { name: STICKY_NOTE_TEXT_LABEL });
@@ -1378,14 +1559,25 @@ describe('checklist notes', () => {
     expect(items[1]).toHaveFocus();
   });
 
-  test('Shift+Enter does not add a new item, leaving the line break to the browser', () => {
+  test('Shift+Enter adds a line break inside the item instead of a new item, and it survives saving', () => {
     seedChecklistNote([{ text: 'milk' }]);
     render(<App />);
 
-    focusElement(getItemTextboxes()[0]);
+    const [itemTextbox] = getItemTextboxes();
+    focusElement(itemTextbox);
+    // jsdom doesn't place a caret on focus the way a real browser does.
+    const caretAtEnd = document.createRange();
+    caretAtEnd.selectNodeContents(itemTextbox);
+    caretAtEnd.collapse(false);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(caretAtEnd);
     userEvent.keyboard('{Shift>}[Enter]{/Shift}');
+    userEvent.keyboard('eggs');
+    act(() => { getItemTextboxes()[0].blur(); });
 
     expect(getItemTextboxes()).toHaveLength(1);
+    const [savedTask] = JSON.parse(localStorage.getItem(STORAGE_KEY_TASKS));
+    expect(savedTask.checklistItems[0].text).toBe('milk\neggs');
   });
 
   test('Backspace on an empty item removes it and leaves the previous one ready to type', () => {
@@ -1589,7 +1781,7 @@ describe('deleting a category', () => {
     seedBoard();
     render(<App />);
 
-    userEvent.selectOptions(screen.getByRole('combobox', { name: TASK_INPUT_CATEGORY_LABEL }), WORK_CATEGORY);
+    userEvent.selectOptions(screen.getByRole('combobox', { name: CREATE_NOTE_CATEGORY_LABEL }), WORK_CATEGORY);
     deleteCategory(WORK_CATEGORY);
     addNote('buy milk');
     userEvent.click(getCategoryTag(CATEGORY_GENERAL));
